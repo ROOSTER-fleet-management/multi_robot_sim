@@ -6,6 +6,23 @@ import rospkg
 
 #from gazebo_msgs import DeleteModel
 
+class Robot:
+    def __init__(self, robot_id, init_x, init_y, init_yaw):
+        self.robot_id = robot_id
+        self.type = robot_id[0:3]
+        if self.type == 'rdg':
+            self.name = 'ridgeback_' + robot_id
+        
+        self.namespace = robot_id
+        self.tf_prefix = self.namespace + '_tf'
+        self.init_x = init_x 
+        self.init_y = init_y 
+        self.init_yaw = init_yaw
+
+        self.scan_topic = 'front/scan' 
+        self.base_frame = self.tf_prefix +'/base_link'
+        self.odom_frame = self.tf_prefix +'/odom' 
+
 def launcher():
     rospy.init_node('multi_robot_sim_launcher', anonymous=False)
    
@@ -47,26 +64,23 @@ def launcher():
     initY = -2.2 
     initYaw = 0
     
-    launch2 = [r.get_path("multi_ridgeback_gazebo")+'/launch/include/one_robot.launch', 
-                'namespace:=' + namespace ,
-                'tfpre:='+ tfpre ,
-                'robot_name:=' + robot_name ,
-                'initX:=' + str(initX) , 
-                'initY:=' + str(initY) ,
-                'initYaw:=' + str(initYaw) ,
-              ]
+    #spawning the robots
+    rdg01 = Robot('rdg01',7.2, -2.2, 0)
 
-    launch2_args = launch2[1:]
-    launch2_file = roslaunch.rlutil.resolve_launch_arguments(launch2)[0]
-    #launch2_file = [(roslaunch.rlutil.resolve_launch_arguments(launch2)[0],launch2_args)]
-    #parent2 = roslaunch.parent.ROSLaunchParent(uuid, launch2_file)
-    #parent2.start()
+    active_robots = [rdg01] #list of instances of class Robot that are in service
 
-    launch_files = [(launch1_file, launch1_args), (launch2_file, launch2_args)]
-    parent = roslaunch.parent.ROSLaunchParent(uuid, launch_files)
-    parent.start()
-
-    # a = raw_input("shutdown key please. r for killing ridgeback nodes only")
+    for robot_id in active_robots:
+        launch_rdg_cmd = [r.get_path("multi_ridgeback_nav")+'/launch/include/one_robot.launch', 
+                    'namespace:=' + robot_id.namespace ,
+                    'tfpre:='+ robot_id.tf_prefix ,
+                    'robot_name:=' + robot_id.name ,
+                    'initX:=' + str(robot_id.init_x) , 
+                    'initY:=' + str(robot_id.init_y) ,
+                    'initYaw:=' + str(robot_id.init_yaw), 
+                    'scanTopic:=' + robot_id.scan_topic ,
+                    'baseFrame:=' + robot_id.base_frame ,
+                    'odomFrame:=' + robot_id.odom_frame ,
+                    ]          
 
     # if a=='r':
     #     parent2.shutdown()
