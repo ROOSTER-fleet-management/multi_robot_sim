@@ -7,26 +7,6 @@ from robot_class import Robot
 
 #from gazebo_msgs import DeleteModel
 
-
-class Robot:
-    def __init__(self, robot_id, init_x, init_y, init_yaw):
-        self.robot_id = robot_id
-        self.type = robot_id[0:3]
-        if self.type == 'rdg':
-            self.name = 'ridgeback_' + robot_id
-        
-        self.namespace = robot_id
-        self.tf_prefix = self.namespace + '_tf'
-        self.init_x = init_x 
-        self.init_y = init_y 
-        self.init_yaw = init_yaw
-
-        self.scan_topic = 'front/scan' 
-        self.base_frame = self.tf_prefix +'/base_link'
-        self.odom_frame = self.tf_prefix +'/odom' 
-
-
-
 def launcher():
     rospy.init_node('multi_robot_sim_launcher', anonymous=False)
    
@@ -59,9 +39,7 @@ def launcher():
 
     #running the map server on the existing launch_gzb object
     map_file = r.get_path("multi_ridgeback_nav") + '/maps/my_ridgeback_race.yaml'
-    print map_file
     map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
-
     launch_gzb.launch(map_server_node)
 
     #spawning the robots
@@ -91,8 +69,8 @@ def launcher():
                
     rospy.spin()
     
-    launch_gzb.shutdown()
-    launch_rdg.shutdown()
+    launch_gzb.parent.shutdown()
+    launch_rdg.parent.shutdown()
     print "shut Down sequence complete!"
 
 
