@@ -53,20 +53,12 @@ def launcher():
     #Launching the gazebo world only
     launch_gzb.start()
     
-    #launch1_file = [(roslaunch.rlutil.resolve_launch_arguments(launch1)[0],launch1_args)]
-    #parent1 = roslaunch.parent.ROSLaunchParent(uuid, launch1_file)
-    #parent1.start()
+    #running the map server
+    map_file = r.get_path("multi_ridgeback_nav") + '/maps/my_ridgeback_race.yaml'
+    print map_file
+    map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
 
-    #spawning the first robot
-    robot_type = 'rdg'
-    robot_number = '01'
-    robot_id = robot_type + robot_number
-    robot_name = 'ridgeback_' + robot_id
-    namespace = robot_id
-    tfpre = namespace + '_tf'
-    initX = 7.2 
-    initY = -2.2 
-    initYaw = 0
+    launch_gzb.launch(map_server_node)
     
     #spawning the robots
     rdg01 = Robot('rdg01',7.2, -2.2, 0)
