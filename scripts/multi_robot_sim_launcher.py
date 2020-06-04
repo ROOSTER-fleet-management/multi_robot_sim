@@ -37,7 +37,7 @@ def launcher():
     r = rospkg.RosPack()
     world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'  
 
-    launch1 = [r.get_path("gazebo_ros")+'/launch/empty_world.launch', 
+    launch_gzb_cmd = [r.get_path("gazebo_ros")+'/launch/empty_world.launch', 
              'debug:=0', 
              'gui:=' + str(gui),
              'use_sim_time:=' + str(use_sim_time),
@@ -46,8 +46,12 @@ def launcher():
              'paused:=false'
              ]
 
-    launch1_args = launch1[1:]
-    launch1_file = roslaunch.rlutil.resolve_launch_arguments(launch1)[0]
+    launch_gzb_args = launch_gzb_cmd[1:]
+    launch_gzb_file = [(roslaunch.rlutil.resolve_launch_arguments(launch_gzb_cmd)[0],launch_gzb_args)]
+    launch_gzb = roslaunch.scriptapi.ROSLaunch()
+    launch_gzb.parent = roslaunch.parent.ROSLaunchParent(uuid, launch_gzb_file)
+    #Launching the gazebo world only
+    launch_gzb.start()
     
     #launch1_file = [(roslaunch.rlutil.resolve_launch_arguments(launch1)[0],launch1_args)]
     #parent1 = roslaunch.parent.ROSLaunchParent(uuid, launch1_file)
@@ -82,14 +86,17 @@ def launcher():
                     'odomFrame:=' + robot_id.odom_frame ,
                     ]          
 
-    # if a=='r':
-    #     parent2.shutdown()
+        launch_rdg_args = launch_rdg_cmd[1:]
+        launch_rdg_file = [(roslaunch.rlutil.resolve_launch_arguments(launch_rdg_cmd)[0],launch_rdg_args)]
+        launch_rdg = roslaunch.scriptapi.ROSLaunch()
+        launch_rdg.parent = roslaunch.parent.ROSLaunchParent(uuid, launch_rdg_file)
+        #Launching the robot spawning and navigation stack nodes
+        launch_rdg.start()
         
     rospy.spin()
 
-    #parent1.shutdown()
-    #parent2.shutdown()
-    parent.shutdown()
+    launch_gzb.shutdown()
+    launch_rdg.shutdown()
     print "shut Down sequence complete!"
 
     # rospy.on_shutdown(shutDownHook)
