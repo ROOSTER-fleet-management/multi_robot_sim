@@ -3,6 +3,7 @@
 import rospy
 import roslaunch
 import rospkg
+from robot_class import Robot
 
 #from gazebo_msgs import DeleteModel
 
@@ -31,7 +32,7 @@ def launcher():
    
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    print "uuid=", uuid
+    #print "uuid=", uuid
 
     # launching gazebo simulator with specified world
     use_sim_time = True
@@ -56,7 +57,7 @@ def launcher():
     #Launching the gazebo world only
     launch_gzb.start()
 
-    #running the map server
+    #running the map server on the existing launch_gzb object
     map_file = r.get_path("multi_ridgeback_nav") + '/maps/my_ridgeback_race.yaml'
     print map_file
     map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
@@ -93,6 +94,7 @@ def launcher():
     launch_gzb.shutdown()
     launch_rdg.shutdown()
     print "shut Down sequence complete!"
+
 
 
 if __name__ == '__main__':
