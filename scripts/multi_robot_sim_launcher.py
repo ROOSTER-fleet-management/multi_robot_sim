@@ -4,7 +4,11 @@
 
 import rospy
 import roslaunch
-import rospkg
+import rospkg   # for resolving paths to ROS packages 
+import math     # for trigonometric evaluations
+
+from docking_station_class import DockingStation
+from transformations import Pose2d
 from robot_class import Robot
 
 #from gazebo_msgs import DeleteModel
