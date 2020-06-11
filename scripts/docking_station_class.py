@@ -1,7 +1,10 @@
 from transformations import Pose2d
 from transformations import transform_2d
 
+# A Docking Station consists of many Docking Cells that may or may not be of the same type.
+
 class DockingCell(object):
+    """ class encapsulating data pertaining to a docking cell """
     def __init__(self, cell_id, origin, length=1, width=1):
         self.id = cell_id   # 4 character code of the docking cell, eg. 'dc01' 
         self.type = 'rdg'   # type of the docking cell (to determine the dimensions and ameneties) 
@@ -16,6 +19,7 @@ class DockingCell(object):
         
 
 class DockingStation:
+    """ class encapsulating data pertaining to a docking station """
     def __init__(self, station_id, origin):
         self.id = station_id    # 4 character code of the docking station, eg. 'ds01'
         self.origin = origin    # a Pose2d object holding the coordinates and orientation of the 
