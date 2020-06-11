@@ -39,6 +39,8 @@ def launcher():
     map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
     gzb.launch.launch(map_server_node)
 
+    # commissioning the docking station
+    ds01 = DockingStation('ds01',Pose2d(9.0, -5.5, math.pi/2.0))
 
     #spawning the robots
     rdg01 = Robot('rdg01')
