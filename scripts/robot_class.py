@@ -52,3 +52,11 @@ class Robot:
     def shutdown(self):
         """ This method brings down the nodes launched by the launch file """
         self.launch.parent.shutdown()
+
+
+    # def return_to_cell(self):
+    #     from geometry_msgs.msg import PoseStamped
+    #     topic = self.id + 'move_base_simple/goal'
+    #     pub = rospy.Publisher(topic, PoseStamped, queue_size=10)
+
+        
