@@ -17,32 +17,20 @@ def launcher():
     #print "uuid=", uuid
 
     # launching gazebo simulator with specified world
-    use_sim_time = True
     gui = True 
+    use_sim_time = True
     headless = False 
-    r = rospkg.RosPack()
     world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'  
+    # creating instance of Gazebo class
+    gzb = Gazebo(gui, use_sim_time, headless, world_name)
+    # launching the gazebo simulator
+    gzb.launch(uuid)
 
-    launch_gzb_cmd = [r.get_path("gazebo_ros")+'/launch/empty_world.launch', 
-                    'debug:=0', 
-                    'gui:=' + str(gui),
-                    'use_sim_time:=' + str(use_sim_time),
-                    'headless:=' + str(headless),
-                    'world_name:=' + world_name,
-                    'paused:=false'
-                    ]
-    
-    launch_gzb_args = launch_gzb_cmd[1:]
-    launch_gzb_file = [(roslaunch.rlutil.resolve_launch_arguments(launch_gzb_cmd)[0],launch_gzb_args)]
-    launch_gzb = roslaunch.scriptapi.ROSLaunch()
-    launch_gzb.parent = roslaunch.parent.ROSLaunchParent(uuid, launch_gzb_file)
-    #Launching the gazebo world only
-    launch_gzb.start()
-
-    #running the map server on the existing launch_gzb object
+    #running the map server on the existing gzb.launch object
     map_file = r.get_path("multi_ridgeback_nav") + '/maps/my_ridgeback_race.yaml'
     map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
-    launch_gzb.launch(map_server_node)
+    gzb.launch.launch(map_server_node)
+
 
     #spawning the robots
     rdg01 = Robot('rdg01')
