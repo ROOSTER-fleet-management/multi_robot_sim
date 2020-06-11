@@ -2,8 +2,8 @@
 
 #/usr/bin/env python
 
-import rospy
-import roslaunch
+import rospy    
+import roslaunch    
 import rospkg   # for resolving paths to ROS packages 
 import math     # for trigonometric evaluations
 
@@ -28,7 +28,7 @@ def launcher():
     gui = True 
     use_sim_time = True
     headless = False 
-    world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'  
+    world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'
     # creating instance of Gazebo class
     gzb = Gazebo(gui, use_sim_time, headless, world_name)
     # launching the gazebo simulator
@@ -55,10 +55,12 @@ def launcher():
     # spawning the robots
     for robot in active_robots:
         robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
-
                
+    
     rospy.spin()
     
+    # shutting down the launch files and nodes
+    gzb.launch.parent.shutdown()
     rdg01.shutdown()
     rdg02.shutdown()
     print "shut Down sequence complete!"
