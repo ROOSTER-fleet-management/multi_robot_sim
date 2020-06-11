@@ -1,6 +1,10 @@
+import rospkg
+import roslaunch
+import rospy
 
 # creating instance of ROSPack class to resolve paths of ROS packages
 r = rospkg.RosPack()
+
 class Robot:
     """ This class encapsulates the data pertaining to a robot """
         self.type = robot_id[0:3]
