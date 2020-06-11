@@ -45,10 +45,17 @@ def launcher():
     launch_gzb.launch(map_server_node)
 
     #spawning the robots
-    rdg01 = Robot('rdg01',7.2, -2.2, 0)
+    rdg01 = Robot('rdg01')
+    rdg01.assign_cell(ds01)
+    
+    rdg02 = Robot('rdg02')
+    rdg02.assign_cell(ds01)
 
-    active_robots = [rdg01] #list of instances of class Robot that are in service
+    # list of instances of class Robot that are in service
+    active_robots = [rdg01,rdg02] 
 
+    # spawning the robots
+    for robot in active_robots:
         robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
 
         launch_rdg_args = launch_rdg_cmd[1:]
