@@ -49,18 +49,7 @@ def launcher():
 
     active_robots = [rdg01] #list of instances of class Robot that are in service
 
-    for robot_id in active_robots:
-        launch_rdg_cmd = [r.get_path("multi_ridgeback_nav")+'/launch/include/one_robot.launch', 
-                    'namespace:=' + robot_id.namespace ,
-                    'tfpre:='+ robot_id.tf_prefix ,
-                    'robot_name:=' + robot_id.name ,
-                    'initX:=' + str(robot_id.init_x) , 
-                    'initY:=' + str(robot_id.init_y) ,
-                    'initYaw:=' + str(robot_id.init_yaw), 
-                    'scanTopic:=' + robot_id.scan_topic ,
-                    'baseFrame:=' + robot_id.base_frame ,
-                    'odomFrame:=' + robot_id.odom_frame ,
-                    ]          
+        robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
 
         launch_rdg_args = launch_rdg_cmd[1:]
         launch_rdg_file = [(roslaunch.rlutil.resolve_launch_arguments(launch_rdg_cmd)[0],launch_rdg_args)]
