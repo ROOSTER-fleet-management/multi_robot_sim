@@ -10,15 +10,19 @@ import math     # for trigonometric evaluations
 from docking_station_class import DockingStation
 from transformations import Pose2d
 from robot_class import Robot
+from gazebo_class import Gazebo
 
 #from gazebo_msgs import DeleteModel
 
 def launcher():
     rospy.init_node('multi_robot_sim_launcher', anonymous=False)
    
+    # obtain universally unique identifier (UUID) of the ROS core
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    #print "uuid=", uuid
+
+    # creating instance of ROSPack class to use for path resolution to ros packages
+    r = rospkg.RosPack()
 
     # launching gazebo simulator with specified world
     gui = True 
