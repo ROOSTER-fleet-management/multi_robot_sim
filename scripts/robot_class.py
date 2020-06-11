@@ -7,17 +7,16 @@ r = rospkg.RosPack()
 
 class Robot:
     """ This class encapsulates the data pertaining to a robot """
+    def __init__(self, robot_id):
+        self.id = robot_id
         self.type = robot_id[0:3]
         if self.type == 'rdg':
             self.name = 'ridgeback_' + robot_id
         
-        self.namespace = robot_id
-        self.tf_prefix = self.namespace + '_tf'
-        self.init_x = init_x 
-        self.init_y = init_y 
-        self.init_yaw = init_yaw
+        self.namespace = robot_id   # namespace under which the nodes and topics of the robot will be launched
+        self.tf_prefix = self.namespace + '_tf' # the coordinate frames of the robot will have this prefix
 
-        self.scan_topic = 'front/scan' 
+        self.scan_topic = 'front/scan'  
         self.base_frame = self.tf_prefix +'/base_link'
         self.odom_frame = self.tf_prefix +'/odom' 
 
@@ -31,7 +30,7 @@ class Robot:
                 cell.assigned = True
                 cell.robot_type = self.type
                 break
-
+    
     def launch(self, uuid, amcl = True, move_base = True, sfm_mpdm = True):
         """ This method launches the launch file of the robot """
         launch_cmd = [r.get_path("multi_ridgeback_nav")+'/launch/include/one_robot.launch', 
@@ -52,7 +51,7 @@ class Robot:
         self.launch.parent = roslaunch.parent.ROSLaunchParent(uuid, launch_file)
         #Launching the robot with specified nodes
         self.launch.start()
-        
+
     def shutdown(self):
         """ This method brings down the nodes launched by the launch file """
         self.launch.parent.shutdown()
