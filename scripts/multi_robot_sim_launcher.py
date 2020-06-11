@@ -60,8 +60,8 @@ def launcher():
                
     rospy.spin()
     
-    launch_gzb.parent.shutdown()
-    launch_rdg.parent.shutdown()
+    rdg01.shutdown()
+    rdg02.shutdown()
     print "shut Down sequence complete!"
 
 

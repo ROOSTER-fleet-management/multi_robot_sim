@@ -48,3 +48,6 @@ class Robot:
         #Launching the robot with specified nodes
         self.launch.start()
         
+    def shutdown(self):
+        """ This method brings down the nodes launched by the launch file """
+        self.launch.parent.shutdown()
