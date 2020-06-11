@@ -46,12 +46,6 @@ def launcher():
     for robot in active_robots:
         robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
 
-        launch_rdg_args = launch_rdg_cmd[1:]
-        launch_rdg_file = [(roslaunch.rlutil.resolve_launch_arguments(launch_rdg_cmd)[0],launch_rdg_args)]
-        launch_rdg = roslaunch.scriptapi.ROSLaunch()
-        launch_rdg.parent = roslaunch.parent.ROSLaunchParent(uuid, launch_rdg_file)
-        #Launching the robot spawning and navigation stack nodes
-        launch_rdg.start()
                
     rospy.spin()
     
