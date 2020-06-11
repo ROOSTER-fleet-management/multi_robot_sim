@@ -1,5 +1,6 @@
 from transformations import Pose2d
 from transformations import transform_2d
+import math
 
 # A Docking Station consists of many Docking Cells that may or may not be of the same type.
 
@@ -27,8 +28,8 @@ class DockingStation:
         self.rows = 2           # number of rows (rows are parallel to the x axis of the station frame)
         self.columns = 3        # number of columns (columns are parallel to the y axis of the station frame)
         self.capacity = self.rows * self.columns    # total capacity of the station
-        self.x_offset = 1.0     # distance between two columns
-        self.y_offset = 1.0     # distnace between two rows
+        self.x_offset = 0.75     # distance between two columns
+        self.y_offset = 0.75     # distnace between two rows
         
         self.cell_type = 'rdg'  
         self.cell_length = 1.0
@@ -39,7 +40,7 @@ class DockingStation:
         # Pose of the origin of docking cells (dc) in the Docking Station (ds) frame of reference
         origin_dc_x = self.x_offset + self.cell_width/2.0  
         origin_dc_y = self.y_offset + self.cell_length/2.0
-        origin_dc_theta = 0
+        origin_dc_theta = math.pi/3.0
         origin_dc = Pose2d(origin_dc_x, origin_dc_y, origin_dc_theta)
         ctr_dc = 1
         
