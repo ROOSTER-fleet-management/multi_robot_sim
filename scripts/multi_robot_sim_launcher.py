@@ -8,9 +8,9 @@ import math     # for trigonometric evaluations
 from docking_station_class import DockingStation
 from transformations import Pose2d
 from robot_class import Robot
+from gazebo_class import Gazebo
 import sys
 from PyQt4 import QtGui
-from gazebo_class import Gazebo
 
 #from gazebo_msgs import DeleteModel
 
@@ -90,15 +90,14 @@ class Window(QtGui.QMainWindow):
 
 
 def launcher():
-    '''
+    
     # Initialize the node
     rospy.init_node('multi_robot_sim_launcher', anonymous=False)
    
     # obtain universally unique identifier (UUID) of the ROS core
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    #print "uuid=", uuid
-    '''
+    
 
  
 
@@ -146,24 +145,18 @@ def launcher():
     rdg02.shutdown()
     print "shut Down sequence complete!"
 
-    '''
-    gui.launch_gzb.parent.shutdown()
-    gui.launch_rdg.parent.shutdown()
-    print "shut Down sequence complete!"
-    '''
-
 
 if __name__ == '__main__':
-    # try:
-    # Initialize Qt
-    app = QtGui.QApplication(sys.argv)
+    # # Initialize Qt
+    # app = QtGui.QApplication(sys.argv)
 
-    # Set up the GUI
-    gui = Window()
+    # # Set up the GUI
+    # gui = Window()
 
-    # Run the GUI application loop
-    sys.exit(app.exec_())
+    # # Run the GUI application loop
+    # sys.exit(app.exec_())
 
-    # launcher()
-    # except rospy.ROSInterruptException:
-    #    pass
+    try:
+        launcher()
+    except rospy.ROSInterruptException:
+       pass
