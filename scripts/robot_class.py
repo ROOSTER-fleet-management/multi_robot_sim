@@ -43,6 +43,7 @@ class Robot:
                     'scanTopic:=' + self.scan_topic ,
                     'baseFrame:=' + self.base_frame ,
                     'odomFrame:=' + self.odom_frame ,
+                    'robotlist:= [rdg01,rdg02]'       # Added to work with melodic-sfm-mpdm branch
                     ]  
                     
         launch_args = launch_cmd[1:]

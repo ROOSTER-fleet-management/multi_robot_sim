@@ -2,14 +2,20 @@
 
 import rospy
 import roslaunch
-import rospkg
+import rospkg   # for resolving paths to ROS packages 
+import math     # for trigonometric evaluations
+
+from docking_station_class import DockingStation
+from transformations import Pose2d
 from robot_class import Robot
+from gazebo_class import Gazebo
+
 import sys
 from PyQt4 import QtGui, QtCore
 from ui import gui_launcher_node
 
 
-################## TODOLIST ##################################
+############################## TODOLIST ##################################
 # DONE 1. Add question ' are you sure '  on shutdown.
 # DONE 2. Add question prompt ' Are you sure'  on Quit application
 # DONE 3. Add about popup information
@@ -26,7 +32,9 @@ from ui import gui_launcher_node
 # DONE 14. Add check to make sure clicking launch while already launched won't work. Disable button?
 # DONE 15. Disable items in robotTree, add robot button and clear list button when launched.
 # TODO 16. Upon launch iterate over the launch list and instantiate robot class objects.
-###############################################################
+# TODO 17. Implement "multi_robot_sim_launcher.py" functionality inside this script
+# TODO 17. a) Add docking station dictionairy
+##########################################################################
 
 version = "0.1"
 
@@ -46,10 +54,13 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
         self.labelStatusIcon.setPixmap(QtGui.QPixmap(":/icons/How-to.png"))
 
+        # Set up launch_list
+        self.launch_list = ["TEST"]
+
         # Connect launch tab buttons
         self.btnClearLaunchList.clicked.connect(self.clear_launch_tree)
-        self.btnLaunch.clicked.connect(self.launch)
-        self.btnShutdown.clicked.connect(self.shutdown)
+        self.btnLaunch.clicked.connect(self.launch_triggered)
+        self.btnShutdown.clicked.connect(self.shutdown_triggered)
         self.robotTree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.robotTree.customContextMenuRequested.connect(self.open_context_menu)  
         self.btnAddRobot.clicked.connect(self.add_robot)
@@ -137,15 +148,27 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             item = root.child(i)
             item.setDisabled(True)
     
-    def launch(self):
-        launch_list = ['rdg01']    # Iterate over items in tree widget with QTreeWidgetItemIterator ?
-        if not launch_list:
+    def launch_triggered(self):
+        self.launch_list = []    # Empty launch list
+        # Iterate over all existing (top level) items (a.k.a. robots) in the robotTree and add as robot class objects
+        root = self.robotTree.invisibleRootItem()
+        child_count = root.childCount()
+        is_unique = True
+        for i in range(child_count):
+            item = root.child(i)
+            robot = Robot(item.text(0))
+            # robot.assign_cell(ds01)       # Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)
+            self.launch_list.append(robot)
+
+        if not self.launch_list:
             # launch_list is empty, throw error.
             QtGui.QMessageBox.warning(self, "Launch list is empty!", "You must have at least 1 robot in the 'Launch list' before you can launch.")
         else:
             global launch_status
             launch_status = launchStatus.LAUNCHED
             print("Launching!")
+            print(self.launch_list)
+            self.launch_nodes()
             print(launch_status)
             self.set_launched_gui()
 
@@ -163,7 +186,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             item = root.child(i)
             item.setDisabled(False)
 
-    def shutdown(self):
+    def shutdown_triggered(self):
         global launch_status
         if launch_status != launchStatus.LAUNCHED:
             # It was not launched yet, thus cannot shutdown.
@@ -175,8 +198,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             
             launch_status = launchStatus.SHUTDOWN
             print("Shutting down...")
-            launch_gzb.parent.shutdown()
-            launch_rdg.parent.shutdown()
+            self.shutdown_nodes()
             print(launch_status)
             self.set_shutdown_gui()
     
@@ -198,6 +220,40 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
     def about(self):
         QtGui.QMessageBox.information(self, "About - multi_robot_sim launcher.", "multi_robot_sim launcher. \nVersion: "+version+"\n\nThe ROS package multi_robot_sim is created by the Human Robot Coproduction research group at the Industrial Design Engineering faculty of the Delft University of Technology.")
+    
+    def launch_nodes(self):
+        print("Starting launch sequence.")
+
+        #region Gazebo launching
+        # Launching gazebo simulator with specified world
+        gui = True 
+        use_sim_time = True
+        headless = False 
+        world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'
+
+        # Creating instance of Gazebo class
+        self.gzb = Gazebo(gui, use_sim_time, headless, world_name)
+
+        # Launching the gazebo simulator
+        self.gzb.launch(uuid)
+
+        # Running the map server on the existing gzb.launch object
+        map_file = r.get_path("multi_ridgeback_nav") + '/maps/my_ridgeback_race.yaml'
+        map_server_node = roslaunch.core.Node('map_server', 'map_server', name='map_server', args=map_file)
+        self.gzb.launch.launch(map_server_node)
+        #endregion
+
+        #region Robot launching
+        # Loop through robot list and spawn the robots
+        for robot in self.launch_list:
+            robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
+        #endregion
+
+    def shutdown_nodes(self):
+        print("Starting shutdown sequence.")
+        self.gzb.launch.parent.shutdown()   # Shut down Gazebo
+        for robot in self.launch_list:      # Shut down robots
+            robot.shutdown()
 
 if __name__ == '__main__':
     try:
@@ -206,13 +262,10 @@ if __name__ == '__main__':
     
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch.configure_logging(uuid)
-        #print "uuid=", uuid
-        
-        # Set up launch api objects
-        launch_gzb = roslaunch.scriptapi.ROSLaunch()
-        launch_rdg = roslaunch.scriptapi.ROSLaunch()
 
-        
+        # creating instance of ROSPack class to use for path resolution to ros packages
+        r = rospkg.RosPack()
+
         #region --- GUI ---
         app = QtGui.QApplication(sys.argv)
         appGui = GuiMainWindow()
@@ -224,9 +277,11 @@ if __name__ == '__main__':
         #endregion
         
 
-        # Shut down launched nodes
-        launch_gzb.parent.shutdown()
-        launch_rdg.parent.shutdown()
-        print "shut Down sequence complete!"
+        # Shut down launched nodes (if the launch_status is launched of course)
+        if launch_status == launchStatus.LAUNCHED:
+            appGui.shutdown_nodes()
+            print "Closing shutdown sequence complete!"
+        else:
+            print("No launched nodes to shutdown; exiting.")
     except rospy.ROSInterruptException:
         pass
