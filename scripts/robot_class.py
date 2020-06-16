@@ -19,7 +19,7 @@ class Robot:
         self.scan_topic = 'front/scan'  
         self.base_frame = self.tf_prefix +'/base_link'
         self.odom_frame = self.tf_prefix +'/odom' 
-
+        
     def assign_cell(self, docking_station):
         """ This method assigns the robot to a docking cell in the specifed docking station """
         self.station_id = docking_station.id
@@ -31,8 +31,11 @@ class Robot:
                 cell.robot_type = self.type
                 break
     
-    def launch(self, uuid, amcl = True, move_base = True, sfm_mpdm = True):
+    def launch(self, uuid, sfm_mpdm_enabled, robot_list):
         """ This method launches the launch file of the robot """
+        self.sfm_mpdm_enabled = sfm_mpdm_enabled
+        self.robotlist = robot_list
+        
         launch_cmd = [r.get_path("multi_ridgeback_nav")+'/launch/include/one_robot.launch', 
                     'namespace:=' + self.namespace ,
                     'tfpre:='+ self.tf_prefix ,
@@ -43,6 +46,8 @@ class Robot:
                     'scanTopic:=' + self.scan_topic ,
                     'baseFrame:=' + self.base_frame ,
                     'odomFrame:=' + self.odom_frame ,
+                    'sfm_mpdm_enabled:=' + self.sfm_mpdm_enabled,
+                    'robotlist:=' + self.robotlist
                     ]  
                     
         launch_args = launch_cmd[1:]
