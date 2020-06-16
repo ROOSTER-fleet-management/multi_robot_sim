@@ -134,7 +134,7 @@ def launcher():
 
     # spawning the robots
     for robot in active_robots:
-        robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
+        robot.launch(uuid, sfm_mpdm_enabled = "True", robot_list = '[rdg02, rdg03]')
                
     
     rospy.spin()

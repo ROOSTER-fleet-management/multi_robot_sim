@@ -23,7 +23,7 @@ from ui import gui_launcher_node
 # DONE 5. Add launch tree item adding. 
 # DONE 6. Change launch status labeltext and labelicon based on launch_status variable.
 # TODO 7. Add clearing everything when clicking the 'New' button in the File menu with question prompt if they are sure.
-# WAIT TODO 8. Add saving and loading of docking station variables based on comboBox robot type.
+# TODO 8. Add saving and loading of docking station variables based on comboBox robot type.
 # TODO 9. Add saving and loading of the launch tree
 # TODO 10. Combine saving and loading of launch tree and all docking station variables to the File > Save and File > Load menu, allowing to save and load to and from a file.
 # DONE 11. Add an icon to the application.
@@ -31,9 +31,10 @@ from ui import gui_launcher_node
 # TODO 13. Make a nice icon for the application (256x256 png)
 # DONE 14. Add check to make sure clicking launch while already launched won't work. Disable button?
 # DONE 15. Disable items in robotTree, add robot button and clear list button when launched.
-# TODO 16. Upon launch iterate over the launch list and instantiate robot class objects.
+# DONE 16. Upon launch iterate over the launch list and instantiate robot class objects.
 # TODO 17. Implement "multi_robot_sim_launcher.py" functionality inside this script
-# TODO 17. a) Add docking station dictionairy
+# DONE 17. a) Add docking station dictionairy
+# DONE 17. b) Attach robot_class.launch method to the right GUI elements.
 ##########################################################################
 
 version = "0.1"
@@ -50,12 +51,21 @@ launch_status = launchStatus.AWAITING
 class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
     def __init__(self):
         super(GuiMainWindow, self).__init__()
+        # Set up launch_list
+        self.launch_list = []
+
+        # Set up docking stations objects
+        # TODO: FIX THESE HARDCODED LOCATIONS TO SOMETHING MORE SUITABLE
+        self.docking_station_dict = {
+            "ds01": DockingStation('ds01',Pose2d(9.0, -5.5, math.pi/2.0)),
+            "ds02": DockingStation('ds02',Pose2d(4.0, 0.5, math.pi/1.0)),
+            "ds03": DockingStation('ds03',Pose2d(1.0, 5.5, math.pi*1.5))
+        }
+
+        # Set up gui
         self.setupUi(self)
 
         self.labelStatusIcon.setPixmap(QtGui.QPixmap(":/icons/How-to.png"))
-
-        # Set up launch_list
-        self.launch_list = ["TEST"]
 
         # Connect launch tab buttons
         self.btnClearLaunchList.clicked.connect(self.clear_launch_tree)
@@ -77,7 +87,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.treeMenu.addAction(deleteItem)
 
         # Connect docking station tab
-        self.labelDockingStationTitle.setStatusTip("testing")
+        self.update_docking_station_gui(self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())])
+        self.labelDockingStationTitle.setStatusTip("FIXME testing")
+        self.comboBoxDockingStationID.currentIndexChanged.connect(self.docking_station_clicked)
 
         # File menu
         self.actionNew.setStatusTip("Clear current setup and start with a fresh one. Note: Any unsaved changes will be lost!")
@@ -88,6 +100,21 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.actionQuit_application.setStatusTip("Quit the application. Note: Any unsaved changes will be lost!")
         self.actionQuit_application.triggered.connect(self.close_application)
 
+    def docking_station_clicked(self):
+        selected_ds = self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())]
+        self.update_docking_station_gui(selected_ds)
+    
+    def update_docking_station_gui(self, ds):
+        ds_id, ds_origin_x, ds_origin_y, ds_origin_theta_rad, ds_rows, ds_columns, ds_cell_offset_x, ds_cell_offset_y, ds_cell_theta_rad = ds.get_attributes()
+        self.doubleSpinBoxDockingStationOriginX.setValue(ds_origin_x)
+        self.doubleSpinBoxDockingStationOriginY.setValue(ds_origin_y)
+        self.spinBoxDockingStationOriginTheta.setValue(math.degrees(ds_origin_theta_rad))
+        self.doubleSpinBoxRobotOffsetSpacingX.setValue(ds_cell_offset_x)
+        self.doubleSpinBoxRobotOffsetSpacingY.setValue(ds_cell_offset_y)
+        self.spinBoxRobotOffsetSpacingTheta.setValue(math.degrees(ds_cell_theta_rad))
+        self.spinBoxRobotsPerRow.setValue(ds_rows)
+        self.spinBoxRobotsPerColumn.setValue(ds_columns)
+    
     def add_robot(self):
         if launch_status != launchStatus.LAUNCHED:
             # Translate input boxes into treeWidgetItem columns
@@ -153,11 +180,14 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         # Iterate over all existing (top level) items (a.k.a. robots) in the robotTree and add as robot class objects
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
-        is_unique = True
+        self.robot_navigation_dict = {}
         for i in range(child_count):
             item = root.child(i)
-            robot = Robot(item.text(0))
-            # robot.assign_cell(ds01)       # Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)
+            robot = Robot(str(item.text(0)))
+            print(self.docking_station_dict)
+            print(self.docking_station_dict[str(item.text(3))])
+            robot.assign_cell(self.docking_station_dict[str(item.text(3))])       # Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)
+            self.robot_navigation_dict[str(item.text(0))] = str(item.text(1))
             self.launch_list.append(robot)
 
         if not self.launch_list:
@@ -167,6 +197,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             global launch_status
             launch_status = launchStatus.LAUNCHED
             print("Launching!")
+            self.labelStatusText.setText("Launching...")
             print(self.launch_list)
             self.launch_nodes()
             print(launch_status)
@@ -193,11 +224,12 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             QtGui.QMessageBox.information(self, "Nothing to shutdown.", "No launch was found to shutdown.")
         elif QtGui.QMessageBox.Yes == QtGui.QMessageBox.question(self, 
                                             'Shut down launched setup?',
-                                            "Are you sure you want to shut down the currently launched setup?", 
+                                            "Are you sure you want to shut down the currently launched setup? \n\nThis may take a moment...", 
                                             QtGui.QMessageBox.Yes | QtGui.QMessageBox.No):
             
             launch_status = launchStatus.SHUTDOWN
             print("Shutting down...")
+            self.labelStatusText.setText("Shutting down...")
             self.shutdown_nodes()
             print(launch_status)
             self.set_shutdown_gui()
@@ -244,9 +276,16 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         #endregion
 
         #region Robot launching
+        # Set up the robot list (string) based on the launch_list
+        robot_list_string = "["
+        for robot in self.launch_list:
+            robot_list_string += robot.id + ","
+        robot_list_string += "]"
+
         # Loop through robot list and spawn the robots
         for robot in self.launch_list:
-            robot.launch(uuid, amcl = True, move_base = True, sfm_mpdm = False)
+            sfm_mpdm = "True" if self.robot_navigation_dict[robot.id] == "SFM-MPDM" else "False"
+            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm, robot_list = robot_list_string)
         #endregion
 
     def shutdown_nodes(self):
