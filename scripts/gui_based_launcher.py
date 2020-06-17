@@ -23,7 +23,7 @@ from ui import gui_launcher_node
 # DONE 5. Add launch tree item adding. 
 # DONE 6. Change launch status labeltext and labelicon based on launch_status variable.
 # TODO 7. Add clearing everything when clicking the 'New' button in the File menu with question prompt if they are sure.
-# TODO 8. Add saving and loading of docking station variables based on comboBox robot type.
+# DONE 8. Add saving and loading of docking station variables based on comboBox robot type.
 # TODO 9. Add saving and loading of the launch tree
 # TODO 10. Combine saving and loading of launch tree and all docking station variables to the File > Save and File > Load menu, allowing to save and load to and from a file.
 # DONE 11. Add an icon to the application.
@@ -32,9 +32,12 @@ from ui import gui_launcher_node
 # DONE 14. Add check to make sure clicking launch while already launched won't work. Disable button?
 # DONE 15. Disable items in robotTree, add robot button and clear list button when launched.
 # DONE 16. Upon launch iterate over the launch list and instantiate robot class objects.
-# TODO 17. Implement "multi_robot_sim_launcher.py" functionality inside this script
+# DONE 17. Implement "multi_robot_sim_launcher.py" functionality inside this script
 # DONE 17. a) Add docking station dictionairy
 # DONE 17. b) Attach robot_class.launch method to the right GUI elements.
+# TODO 18. Add check for changes made to the current setup (change in docking station or change in launch list) with 'unsaved changed' flag.
+# TODO 19. Add * to window title when unsaved changes are present ('unsaved changes' flag is true)
+# TODO 20. Reset 'unsaved changes' flag upon save.
 ##########################################################################
 
 version = "0.1"
@@ -65,9 +68,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         # Set up gui
         self.setupUi(self)
 
+        #region LAUNCH TAB
+        # Set up and connect gui widgets
         self.labelStatusIcon.setPixmap(QtGui.QPixmap(":/icons/How-to.png"))
-
-        # Connect launch tab buttons
         self.btnClearLaunchList.clicked.connect(self.clear_launch_tree)
         self.btnLaunch.clicked.connect(self.launch_triggered)
         self.btnShutdown.clicked.connect(self.shutdown_triggered)
@@ -86,12 +89,28 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         deleteItem.setIcon(deleteIcon)
         self.treeMenu.addAction(deleteItem)
 
-        # Connect docking station tab
-        self.update_docking_station_gui(self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())])
-        self.labelDockingStationTitle.setStatusTip("FIXME testing")
-        self.comboBoxDockingStationID.currentIndexChanged.connect(self.docking_station_clicked)
+        # Set statustips
 
-        # File menu
+        #endregion
+
+        #region DOCKING STATION TAB
+        # Connect gui widgets
+        self.comboBoxDockingStationID.currentIndexChanged.connect(self.docking_station_clicked)
+        self.spinBoxRobotsPerColumn.valueChanged.connect(self.docking_station_value_changed)
+        self.spinBoxRobotsPerRow.valueChanged.connect(self.docking_station_value_changed)
+        self.spinBoxDockingStationOriginTheta.valueChanged.connect(self.docking_station_value_changed)
+        self.spinBoxRobotOffsetSpacingTheta.valueChanged.connect(self.docking_station_value_changed)
+        self.doubleSpinBoxDockingStationOriginX.valueChanged.connect(self.docking_station_value_changed)
+        self.doubleSpinBoxDockingStationOriginY.valueChanged.connect(self.docking_station_value_changed)
+        self.doubleSpinBoxRobotOffsetSpacingX.valueChanged.connect(self.docking_station_value_changed)
+        self.doubleSpinBoxRobotOffsetSpacingY.valueChanged.connect(self.docking_station_value_changed)
+        self.update_docking_station_gui(self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())])
+
+        # Set statustips 
+        self.labelDockingStationTitle.setStatusTip("FIXME testing")
+        #endregion
+
+        #region File menu
         self.actionNew.setStatusTip("Clear current setup and start with a fresh one. Note: Any unsaved changes will be lost!")
         self.actionSave_file.setStatusTip("Save current launch and docking station setup to a file.")
         self.actionLoad_file.setStatusTip("Open an existing setup file. Note: Any unsaved changes will be lost!")
@@ -99,21 +118,45 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.actionAbout.triggered.connect(self.about)
         self.actionQuit_application.setStatusTip("Quit the application. Note: Any unsaved changes will be lost!")
         self.actionQuit_application.triggered.connect(self.close_application)
+        #endregion
 
     def docking_station_clicked(self):
         selected_ds = self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())]
         self.update_docking_station_gui(selected_ds)
+
+    def docking_station_value_changed(self):
+        selected_ds = self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())]
+        self.update_docking_station_object(selected_ds)
     
     def update_docking_station_gui(self, ds):
         ds_id, ds_origin_x, ds_origin_y, ds_origin_theta_rad, ds_rows, ds_columns, ds_cell_offset_x, ds_cell_offset_y, ds_cell_theta_rad = ds.get_attributes()
-        self.doubleSpinBoxDockingStationOriginX.setValue(ds_origin_x)
-        self.doubleSpinBoxDockingStationOriginY.setValue(ds_origin_y)
-        self.spinBoxDockingStationOriginTheta.setValue(math.degrees(ds_origin_theta_rad))
-        self.doubleSpinBoxRobotOffsetSpacingX.setValue(ds_cell_offset_x)
-        self.doubleSpinBoxRobotOffsetSpacingY.setValue(ds_cell_offset_y)
-        self.spinBoxRobotOffsetSpacingTheta.setValue(math.degrees(ds_cell_theta_rad))
-        self.spinBoxRobotsPerRow.setValue(ds_rows)
-        self.spinBoxRobotsPerColumn.setValue(ds_columns)
+        self.set_value_silent(self.doubleSpinBoxDockingStationOriginX, ds_origin_x)
+        self.set_value_silent(self.doubleSpinBoxDockingStationOriginY, ds_origin_y)
+        self.set_value_silent(self.spinBoxDockingStationOriginTheta, math.degrees(ds_origin_theta_rad))
+        self.set_value_silent(self.doubleSpinBoxRobotOffsetSpacingX, ds_cell_offset_x)
+        self.set_value_silent(self.doubleSpinBoxRobotOffsetSpacingY, ds_cell_offset_y)
+        self.set_value_silent(self.spinBoxRobotOffsetSpacingTheta, math.degrees(ds_cell_theta_rad))
+        self.set_value_silent(self.spinBoxRobotsPerRow, ds_rows)
+        self.set_value_silent(self.spinBoxRobotsPerColumn, ds_columns)
+
+    def update_docking_station_object(self, ds):
+        print("changed", ds.id)
+        ds_id = ds.id
+        ds_origin_x = self.doubleSpinBoxDockingStationOriginX.value()
+        ds_origin_y = self.doubleSpinBoxDockingStationOriginY.value()
+        ds_origin_theta_deg = self.spinBoxDockingStationOriginTheta.value()
+        ds_rows = self.spinBoxRobotsPerRow.value()
+        ds_columns = self.spinBoxRobotsPerColumn.value()
+        ds_cell_offset_x = self.doubleSpinBoxRobotOffsetSpacingX.value()
+        ds_cell_offset_y = self.doubleSpinBoxRobotOffsetSpacingY.value()
+        ds_cell_offset_theta_deg = self.spinBoxRobotOffsetSpacingTheta.value()
+        ds_origin = Pose2d(ds_origin_x, ds_origin_y, math.radians(ds_origin_theta_deg))
+        ds.set_attributes(ds_id, ds_origin, ds_rows, ds_columns, ds_cell_offset_x, ds_cell_offset_y, math.radians(ds_cell_offset_theta_deg))
+
+    def set_value_silent(self, QtObject, value):
+        QtObject.valueChanged.disconnect(self.docking_station_value_changed)
+        QtObject.setValue(value)
+        QtObject.valueChanged.connect(self.docking_station_value_changed)
     
     def add_robot(self):
         if launch_status != launchStatus.LAUNCHED:
@@ -290,9 +333,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
     def shutdown_nodes(self):
         print("Starting shutdown sequence.")
-        self.gzb.launch.parent.shutdown()   # Shut down Gazebo
         for robot in self.launch_list:      # Shut down robots
             robot.shutdown()
+        self.gzb.launch.parent.shutdown()   # Shut down Gazebo
 
 if __name__ == '__main__':
     try:
