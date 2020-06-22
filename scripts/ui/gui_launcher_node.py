@@ -374,7 +374,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "multi_robot_sim - Launcher GUI", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Untitled - multi_robot_sim launcher", None))
         self.labelLaunchListHeader.setText(_translate("MainWindow", "Launch list", None))
         self.labelListInfo.setText(_translate("MainWindow", "(RMB - remove an item)", None))
         self.btnClearLaunchList.setText(_translate("MainWindow", "  &Clear Launch list", None))
