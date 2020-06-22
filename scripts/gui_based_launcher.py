@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
-import rospy
-import roslaunch
-import rospkg   # for resolving paths to ROS packages 
 import math     # for trigonometric evaluations
 import json     # Used for reading and writing JSON files (saving and loading setups)
 import os       # Used to get base filename and file and directory handling
+import sys
 
+import rospy
+import roslaunch
+import rospkg   # for resolving paths to ROS packages 
+from PyQt4 import QtGui, QtCore
+
+from ui import gui_launcher_node
 from docking_station_class import DockingStation
 from transformations import Pose2d
 from robot_class import Robot
 from gazebo_class import Gazebo
 
-import sys
-from PyQt4 import QtGui, QtCore
-from ui import gui_launcher_node
 
-
-############################## TODOLIST ##################################
+#region ############################## TODOLIST ##################################
 # DONE 1. Add question ' are you sure '  on shutdown.
 # DONE 2. Add question prompt ' Are you sure'  on Quit application
 # DONE 3. Add about popup information
@@ -31,7 +31,7 @@ from ui import gui_launcher_node
 # DONE 10a. Saving of launch tree, gui status and docking stations to JSON.
 # DONE 10b. Loading of launch tree, gui status and docking stations from JSON.
 # DONE 11. Add an icon to the application.
-# TODO 12. Add status tips where needed.
+# DONE 12. Add status tips where needed.
 # TODO 13. Make a nice icon for the application (256x256 png)
 # DONE 14. Add check to make sure clicking launch while already launched won't work. Disable button?
 # DONE 15. Disable items in robotTree, add robot button and clear list button when launched.
@@ -41,17 +41,19 @@ from ui import gui_launcher_node
 # DONE 17b. Attach robot_class.launch method to the right GUI elements.
 # DONE 18. Add check for changes made to the current setup (change in docking station or change in launch list) with 'unsaved changed' flag.
 # DONE 19. Add * to window title when unsaved changes are present ('unsaved changes' flag is true)
-# TODO 20. Reset 'unsaved changes' flag upon save[X], load[_] and new file[X].
+# DONE 20. Reset 'unsaved changes' flag upon save[X], load[X] and new file[X].
 # TODO 21. Fix/change the hardcoded docking station locations to something more suitable.
-# TODO 22. Add docstrings to all methods according to PEP8.
-##########################################################################
+# DONE 22. Add docstrings to all methods according to PEP8.
+# DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.
+#endregion ##########################################################################
 
-VERSION = "0.1"
+VERSION = "1.0"
 APPLICATION_TITLE = "multi_robot_sim launcher"
 
 print(APPLICATION_TITLE + ". Version: "+VERSION)
 
 class launchStatus:             # Kind of like an enum but for python 2.7
+    """Class that acts as an enum."""
     AWAITING = "Awaiting launch..."
     LAUNCHED = "Launched"
     SHUTDOWN = "Shutdown"
@@ -60,6 +62,10 @@ launch_status = launchStatus.AWAITING
 
 class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
     def __init__(self):
+        """
+        Initialise the ui widgets, items and varibles.
+        Connect up all UI interactions to their methods. Define status tips.
+        """
         super(GuiMainWindow, self).__init__()
 
         # Unsaved changes flag, true if the file has been edited since last save.
@@ -100,7 +106,14 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.treeMenu.addAction(deleteItem)
 
         # Set statustips
-
+        self.btnClearLaunchList.setStatusTip("Clears all the robots in the launch list.")
+        self.btnAddRobot.setStatusTip("Add a robot with the selected properties to the launch list.")
+        self.btnLaunch.setStatusTip("Launches Gazebo and robots based on the current launch list and docking station properties.")
+        self.btnShutdown.setStatusTip("Shuts down launched robots and Gazebo.")
+        self.comboBoxRobotType.setStatusTip("The type of robot which is to be added to the launch list.")
+        self.comboBoxDockingStationLaunch.setStatusTip("The id of the docking station.")
+        self.checkBoxSFMMPDM.setStatusTip("Which navigation stack to use: Checked = SFM-MPDM, Unchecked = move_base.")
+        self.spinBoxRobotID.setStatusTip("The numerical part of the robot id, can be anywhere between 01 and 99.")
         #endregion
 
         #region DOCKING STATION TAB
@@ -117,7 +130,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.update_docking_station_gui(self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())])
 
         # Set statustips 
-        self.labelDockingStationTitle.setStatusTip("FIXME testing")
+        self.comboBoxDockingStationID.setStatusTip("Select the id of the docking station which you wish to edit its properties of.")
         #endregion
 
         #region File menu
@@ -137,6 +150,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.unsaved_changes_inactive()
     
     def populate_docking_station_dict(self):
+        """Populate the docking station dictionary with DockingStation class instances."""
         self.docking_station_dict = {
             "ds01": DockingStation('ds01',Pose2d(9.0, -5.5, math.pi/2.0)),
             "ds02": DockingStation('ds02',Pose2d(4.0, 0.5, math.pi/1.0)),
@@ -144,26 +158,28 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         }
     
     def unsaved_changes_active(self):
+        """Update the unsaved changes flag and add * to the window title."""
         if not self.unsaved_changes:
             self.setWindowTitle(self.filename + "* - " + APPLICATION_TITLE)
             self.unsaved_changes = True
 
     def unsaved_changes_inactive(self):
+        """Reset the unsaved changes flag to false, remove the * from the window title."""
         self.setWindowTitle(self.filename + " - " + APPLICATION_TITLE)
         self.unsaved_changes = False
 
     def docking_station_clicked(self):
+        """Trigger a GUI update based on the selected docking station ID."""
         selected_ds = self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())]
         self.update_docking_station_gui(selected_ds)
 
     def docking_station_value_changed(self):
+        """Trigger an docking station object attribute update based on the selected docking station ID"""
         selected_ds = self.docking_station_dict[str(self.comboBoxDockingStationID.currentText())]
         self.update_docking_station_object(selected_ds)
     
     def update_docking_station_gui(self, ds):
-        '''
-        The selected docking station has changed, thus silently update all input fields to match the objects variables.
-        '''
+        """The selected docking station has changed, thus silently update all input fields to match the objects variables."""
         ds_id, ds_origin_x, ds_origin_y, ds_origin_theta_rad, ds_rows, ds_columns, ds_cell_offset_x, ds_cell_offset_y, ds_cell_theta_rad = ds.get_attributes()
         self.set_value_silent(self.doubleSpinBoxDockingStationOriginX, ds_origin_x)
         self.set_value_silent(self.doubleSpinBoxDockingStationOriginY, ds_origin_y)
@@ -176,9 +192,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.unsaved_changes_active()
 
     def update_docking_station_object(self, ds):
-        '''
-        A change was made to any of the input values for the docking station. Thus update the docking station object.
-        '''
+        """A change was made to any of the input values for the docking station. Thus update the docking station object."""
         ds_id = ds.id
         ds_origin_x = self.doubleSpinBoxDockingStationOriginX.value()
         ds_origin_y = self.doubleSpinBoxDockingStationOriginY.value()
@@ -193,11 +207,17 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.unsaved_changes_active()
 
     def set_value_silent(self, QtObject, value):
+        """Silently update an objects value by disconnecting and reconnecting the valueChanged triggers."""
         QtObject.valueChanged.disconnect(self.docking_station_value_changed)
         QtObject.setValue(value)
         QtObject.valueChanged.connect(self.docking_station_value_changed)
     
     def add_robot(self):
+        """
+        Add a robot to the launch list tree widget based on the Launch tab input field values.
+        Before adding, a check is performed to make sure the supplied robot ID is unique,
+        if it is not unique, the user is notified with a MessageBox. 
+        """
         if launch_status != launchStatus.LAUNCHED:
             # Translate input boxes into treeWidgetItem columns
             robot_type = self.comboBoxRobotType.currentText()
@@ -234,15 +254,18 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
                 QtGui.QMessageBox.information(self, "Robot ID is not unique.", "The Robot ID you tried to add already exists in the launch list and cannot be added again.")
 
     def open_context_menu(self):
+        """Opens the Right-Mouse-Button context menu, showing an option to delete the launch tree item."""
         self.treeMenu.exec_(QtGui.QCursor.pos())
 
     def delete_launch_tree_item(self, item):
+        """Deletes the currently selected item from the launch tree."""
         if launch_status != launchStatus.LAUNCHED:
             model_index = self.robotTree.currentIndex()
             self.robotTree.takeTopLevelItem(model_index.row())
             self.unsaved_changes_active()
 
     def clear_launch_tree(self):
+        """Clears the entire launch tree."""
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         if child_count > 0:
@@ -250,6 +273,11 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             self.unsaved_changes_active()
     
     def set_launched_gui(self):
+        """
+        Update the states and interactivity of the GUI according to the launch status (launched).
+        Disabling: Launch button, Add robot button, Clear launch list button, launch list tree items.
+        Enabling: Shutdown button.
+        """
         self.labelStatusText.setText(launch_status)
         self.labelStatusIcon.setPixmap(QtGui.QPixmap(":/icons/Next.png"))
         self.btnLaunch.setEnabled(False)
@@ -264,21 +292,42 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             item.setDisabled(True)
     
     def launch_triggered(self):
+        """
+        Prepares the launching of nodes based on the robot items in the current launch list and docking station properties.
+        Before launch: 
+        1. Checks if the number of assigned robots does not exceed a docking stations capacity.
+        2. Check if the launch list has any robots at all.
+        If any issues are encountered, a MessageBox is displayed to the user informing them as such.
+        Otherwise the created list of Robot class objects is launched by calling "launch_nodes()".
+        """
         self.launch_list = []    # Empty launch list
+        # Commision all docking stations (overwriting any previous docking cells)
+        for ds in self.docking_station_dict.values():
+            ds.commission()
+
         # Iterate over all existing (top level) items (a.k.a. robots) in the robotTree and add as robot class objects
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         self.robot_navigation_dict = {}
+        assignment_issue = False
+        ds_issue = ""
         for i in range(child_count):
             item = root.child(i)
             robot = Robot(str(item.text(0)))
-            robot.assign_cell(self.docking_station_dict[str(item.text(3))])       # Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)
+            succesful_assignment = robot.assign_cell(self.docking_station_dict[str(item.text(3))])       # Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)
             self.robot_navigation_dict[str(item.text(0))] = str(item.text(1))
             self.launch_list.append(robot)
+            if not succesful_assignment:
+                assignment_issue = True
+                ds_issue = str(item.text(3))
+                break
 
         if not self.launch_list:
             # launch_list is empty, throw error.
             QtGui.QMessageBox.warning(self, "Launch list is empty!", "You must have at least 1 robot in the 'Launch list' before you can launch.")
+        elif assignment_issue:
+            # Docking station over max capacity, throw error.
+            QtGui.QMessageBox.warning(self, "Maximum capacity exceeded!", "Docking station "+ ds_issue +" maxiumum capacity is being exceeded, unable to launch the current setup.")
         else:
             global launch_status
             launch_status = launchStatus.LAUNCHED
@@ -290,6 +339,11 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             self.set_launched_gui()
 
     def set_shutdown_gui(self):
+        """
+        Update the states and interactivity of the GUI according to the launch status (shutdown).
+        Disabling: Shutdown button.
+        Enabling: Launch button, Add robot button, Clear launch list button, launch list tree items.
+        """
         self.labelStatusText.setText(launch_status)
         self.labelStatusIcon.setPixmap(QtGui.QPixmap(":/icons/Abort.png"))
         self.btnLaunch.setEnabled(True)
@@ -304,6 +358,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             item.setDisabled(False)
 
     def shutdown_triggered(self):
+        """Prompts the user if they are sure they want to shut down, and if so; shuts down the currently active nodes."""
         global launch_status
         if launch_status != launchStatus.LAUNCHED:
             # It was not launched yet, thus cannot shutdown.
@@ -321,6 +376,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             self.set_shutdown_gui()
     
     def close_application(self):
+        """Prompts the user if they are sure they which to quit the application before quitting."""
         choice = QtGui.QMessageBox.question(self, 
                                             'Quit application?',
                                             "Are you sure you want to quit? Any unsaved changed will be lost!", 
@@ -333,16 +389,27 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             pass
     
     def closeEvent(self, event):
+        """Takes control of the close event, making sure the user cannot close the application before prompting them."""
         event.ignore()
         self.close_application()
 
     def about(self):
-        QtGui.QMessageBox.information(self, "About - " + APPLICATION_TITLE + ".", APPLICATION_TITLE + "\nVersion: "+VERSION+"\n\nThe ROS package multi_robot_sim is created by the Human Robot Coproduction research group at the Industrial Design Engineering faculty of the Delft University of Technology.")
+        """Display a MessageBox with the application title, version number and general information."""
+        QtGui.QMessageBox.information(
+            self, "About - " + APPLICATION_TITLE + ".", 
+            APPLICATION_TITLE + "\nVersion: "+VERSION+
+            "\n\nThe ROS package multi_robot_sim is created by the Human "+
+            "Robot Coproduction research group at the Industrial Design "+
+            "Engineering faculty of the Delft University of Technology.")
     
     def new_file(self):
-        '''
-        This method will clear all input field and the launch list, it will also delete the docking station objects and initilise new default ones.
-        '''
+        """
+        This method will clear all input field and the launch list,
+        delete the docking station objects and initilise new default ones.
+        Before clearing it checks:
+        1. If the user is sure they want to clear the current setup with a question prompt.
+        2. If the launch status isn't currently launched.
+        """
         if launch_status != launchStatus.LAUNCHED:
             choice = QtGui.QMessageBox.question(self, 
                                                 'New file?',
@@ -371,9 +438,14 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Launch list is currently active!", "Please shut down the currently active launch list before clearing the current setup and creating a new file.")
     
     def save_file_as(self):
-        '''
+        """
         This method will open the Qt save dialog, allow the user to input a save name, and save the current setup as .JSON
-        '''
+        1. Retrieve filename and filepath from user.
+        2. Creates dictionaries for the launch list tree items and adds those to the launch tree dict.
+        3. Creates dictionaries for the docking station objects and adds those to the docking station dict.
+        4. Adds all widgets QtObjects and abovementioned dictionaries to the savedata_dict.
+        5. "Dumps" the dictionary to a JSON file and resets 'unsaved changes' flag.
+        """
         filepath = str(QtGui.QFileDialog.getSaveFileName(self, 'Save File', self.filepath, "JSON (*.json)"))
         filename = os.path.basename(filepath)
         if filename and filepath:
@@ -428,9 +500,17 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             self.unsaved_changes_inactive()
 
     def load_file(self):
-        '''
+        """
         This method will load a setup from a JSON file, overwriting any unsaved changes of the current setup.
-        '''
+        1. Retrieve filename and filepath from user.
+        2. Loads the JSON data into the loaddata_dict dictionary.
+        3. Loops through the loaddata_dict, setting all Widget and QtObject fields.
+        4. Populates the tree widget and updates the docking station objects.
+        5. Resets the 'unsaved changes' flag.
+        Before loading:
+        1. Checks if the launch status isn't currently launched.
+        2. If there are any unsaved changes and prompt the user if they are sure if there are any.
+        """
         if launch_status != launchStatus.LAUNCHED:
             open_dialoge = False
             if self.unsaved_changes:
@@ -488,6 +568,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
     
     #region Methods used in loading from JSON
     def set_combobox_from_JSON(self, obj, value):
+        """Attempts to find the specified value in the combobox and sets the index to match"""
         index = obj.findText(value)  # get the corresponding index for specified string in combobox
 
         if index == -1:  # add to list if not found
@@ -497,6 +578,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         obj.setCurrentIndex(index)   # preselect a combobox value by index
     
     def set_launchtree_from_JSON(self, tree, value):
+        """Clears the launch tree and repopulates it from the supplied dictionary."""
         self.clear_launch_tree()
 
         for key in value:
@@ -509,6 +591,10 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             self.robotTree.addTopLevelItem(robot_item)
 
     def set_docking_stations_from_JSON(self, value):
+        """
+        Loops through the supplies dictionary and updates all docking station object instances.
+        Finishes off by calling an update to the docking station GUI fields.
+        """
         for key in value:
             ds_id = value[key]['id']
             ds = self.docking_station_dict[ds_id]
@@ -527,6 +613,13 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
     #endregion
 
     def launch_nodes(self):
+        """
+        1. Prepares the launching of Gazebo.
+        2. Sets the Gazebo world map.
+        3. Launches Gazebo
+        4. Sets up the robot_list_string based on the launch list
+        5. Loops over the launch list, launching the robot instances.
+        """
         print("Starting launch sequence.")
 
         #region Gazebo launching
@@ -562,6 +655,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         #endregion
 
     def shutdown_nodes(self):
+        """Shuts down the launched nodes, starting with robot nodes, ending with Gazebo."""
         print("Starting shutdown sequence.")
         for robot in self.launch_list:      # Shut down robots
             robot.shutdown()

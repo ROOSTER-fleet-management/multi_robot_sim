@@ -22,6 +22,7 @@ class Robot:
         
     def assign_cell(self, docking_station):
         """ This method assigns the robot to a docking cell in the specifed docking station """
+        succesful_assignment = False
         self.station_id = docking_station.id
         for cell in docking_station.cell:
             if cell.assigned == False:
@@ -29,8 +30,10 @@ class Robot:
                 self.cell_origin = cell.origin
                 cell.assigned = True
                 cell.robot_type = self.type
+                succesful_assignment = True
                 break
-    
+        return succesful_assignment
+        
     def launch(self, uuid, sfm_mpdm_enabled, robot_list):
         """ This method launches the launch file of the robot """
         self.sfm_mpdm_enabled = sfm_mpdm_enabled
