@@ -32,7 +32,7 @@ from gazebo_class import Gazebo
 # DONE 10b. Loading of launch tree, gui status and docking stations from JSON.
 # DONE 11. Add an icon to the application.
 # DONE 12. Add status tips where needed.
-# TODO 13. Make a nice icon for the application (256x256 png)
+# DONE 13. Make a nice icon for the application (256x256 png)
 # DONE 14. Add check to make sure clicking launch while already launched won't work. Disable button?
 # DONE 15. Disable items in robotTree, add robot button and clear list button when launched.
 # DONE 16. Upon launch iterate over the launch list and instantiate robot class objects.
@@ -45,6 +45,8 @@ from gazebo_class import Gazebo
 # TODO 21. Fix/change the hardcoded docking station locations to something more suitable.
 # DONE 22. Add docstrings to all methods according to PEP8.
 # DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.
+# DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)
+# DONE 25. Update about screen to include the nice icon.
 #endregion ##########################################################################
 
 VERSION = "1.0"
@@ -395,12 +397,15 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
     def about(self):
         """Display a MessageBox with the application title, version number and general information."""
-        QtGui.QMessageBox.information(
-            self, "About - " + APPLICATION_TITLE + ".", 
-            APPLICATION_TITLE + "\nVersion: "+VERSION+
-            "\n\nThe ROS package multi_robot_sim is created by the Human "+
-            "Robot Coproduction research group at the Industrial Design "+
-            "Engineering faculty of the Delft University of Technology.")
+        text = "<center>" \
+            "<h2>"+APPLICATION_TITLE+"</h2>" \
+            "</center>" \
+            "The ROS package multi_robot_sim is created by the Human " \
+            "Robot Coproduction research group at the Industrial Design " \
+            "Engineering faculty of the Delft University of Technology." \
+            "<p>Version: "+VERSION+"<br/>" \
+            "License: Apache License version 2.0</p>"
+        QtGui.QMessageBox.about(self, "About - " + APPLICATION_TITLE + ".", text)
     
     def new_file(self):
         """
@@ -676,7 +681,7 @@ if __name__ == '__main__':
         app = QtGui.QApplication(sys.argv)
         appGui = GuiMainWindow()
         windowIcon = QtGui.QIcon()
-        windowIcon.addPixmap(QtGui.QPixmap(":/icons/Next.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        windowIcon.addPixmap(QtGui.QPixmap(":/icons/Launch Icon Multi.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         appGui.setWindowIcon(windowIcon)
         appGui.show()
         app.exec_()
