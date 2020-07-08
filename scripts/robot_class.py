@@ -10,13 +10,17 @@ class Robot:
     def __init__(self, robot_id):
         self.id = robot_id
         self.type = robot_id[0:3]
+        self.scan_topic = 'front/scan'  
         if self.type == 'rdg':
             self.name = 'ridgeback_' + robot_id
+            self.scan_topic = 'front/scan' 
+        elif self.type == 'hsk':
+            self.name = 'husky_' + robot_id
+            self.scan_topic = 'scan' 
         
         self.namespace = robot_id   # namespace under which the nodes and topics of the robot will be launched
         self.tf_prefix = self.namespace + '_tf' # the coordinate frames of the robot will have this prefix
 
-        self.scan_topic = 'front/scan'  
         self.base_frame = self.tf_prefix +'/base_link'
         self.odom_frame = self.tf_prefix +'/odom' 
         
@@ -38,8 +42,14 @@ class Robot:
         """ This method launches the launch file of the robot """
         self.sfm_mpdm_enabled = sfm_mpdm_enabled
         self.robotlist = robot_list
-        
-        launch_cmd = [r.get_path("multi_ridgeback_nav")+'/launch/include/one_robot.launch', 
+
+        package = ""
+        if self.type == 'rdg':      # Ridgeback, thus multi_ridgeback_nav
+            package = "multi_ridgeback_nav"
+        elif self.type == 'hsk':    # Husky, thus multi_husky_nav
+            package = "multi_husky_nav"
+                
+        launch_cmd = [r.get_path(package)+'/launch/include/one_robot.launch', 
                     'namespace:=' + self.namespace ,
                     'tfpre:='+ self.tf_prefix ,
                     'robot_name:=' + self.name ,
