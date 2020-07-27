@@ -401,7 +401,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             "<h2>"+APPLICATION_TITLE+"</h2>" \
             "</center>" \
             "The ROS package multi_robot_sim is created by the Human " \
-            "Robot Coproduction research group at the Industrial Design " \
+            "Robot Co-production research group at the Industrial Design " \
             "Engineering faculty of the Delft University of Technology." \
             "<p>Version: "+VERSION+"<br/>" \
             "License: Apache License version 2.0</p>"
