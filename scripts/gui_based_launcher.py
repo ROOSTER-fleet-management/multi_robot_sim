@@ -46,7 +46,8 @@ from gazebo_class import Gazebo
 # DONE 22. Add docstrings to all methods according to PEP8.
 # DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.
 # DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)
-# DONE 25. Update about screen to include the nice icon..
+# DONE 25. Update about screen to include the nice icon.
+# TODO 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)
 #endregion ##########################################################################
 
 VERSION = "1.0"
