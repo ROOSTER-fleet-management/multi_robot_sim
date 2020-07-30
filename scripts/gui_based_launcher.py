@@ -15,6 +15,7 @@ from docking_station_class import DockingStation
 from transformations import Pose2d
 from robot_class import Robot
 from gazebo_class import Gazebo
+from JSONtoRosparam.LocationLoader import set_up_locations
 
 
 #region ############################## TODOLIST ##################################
@@ -47,13 +48,15 @@ from gazebo_class import Gazebo
 # DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.
 # DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)
 # DONE 25. Update about screen to include the nice icon.
-# TODO 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)
+# DONE 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)
 #endregion ##########################################################################
 
 VERSION = "1.0"
 APPLICATION_TITLE = "multi_robot_sim launcher"
 
 print(APPLICATION_TITLE + ". Version: "+VERSION)
+
+set_up_locations()              # Load local JSON locations file and place in rosparam server.
 
 class launchStatus:             # Kind of like an enum but for python 2.7
     """Class that acts as an enum."""
