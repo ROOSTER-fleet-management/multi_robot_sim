@@ -656,6 +656,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         for robot in self.launch_list:
             robot_list_string += robot.id + ","
         robot_list_string += "]"
+        rospy.set_param("/robot_list", robot_list_string)
 
         # Loop through robot list and spawn the robots
         for robot in self.launch_list:
