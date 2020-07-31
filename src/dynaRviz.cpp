@@ -14,6 +14,32 @@
 #include <string>
 #include <unistd.h>
 
+class RobotDisplayGroup : public rviz::DisplayGroup
+{
+  private:
+    std::string robotId_;
+
+  public:
+    RobotDisplayGroup(std::string robotId, rviz::VisualizationManager* manager_)
+      : robotId_(robotId)
+      {
+        this->setName(robotId_.data());
+        this->initialize(manager_);
+        this->setEnabled(1);
+
+        //creating Laser Scan
+        std::string scanTopic = "/"+robotId+"/front/scan";
+        rviz::Display* laserScan_ = this->createDisplay("rviz/LaserScan"); 
+        this->addDisplay(laserScan_);
+        laserScan_->initialize(manager_);
+        laserScan_->setEnabled(1);
+        laserScan_->setName("Laser Scan");
+        laserScan_->subProp( "Topic" )->setValue( scanTopic.data() );
+      }
+
+};
+
+
 // BEGIN_TUTORIAL
 // Constructor for DynaRviz.  This does most of the work of the class.
 DynaRviz::DynaRviz( QWidget* parent )
@@ -32,67 +58,28 @@ DynaRviz::DynaRviz( QWidget* parent )
 
   /////////////////////////////////////////////////////////////////////////////////////////
     // Create a Grid display.
-  grid_ = manager_->createDisplay( "rviz/Grid", "adjustable grid", true );
-  ROS_ASSERT( grid_ != NULL );
+  // grid_ = manager_->createDisplay( "rviz/Grid", "adjustable grid", true );
+  // ROS_ASSERT( grid_ != NULL );
 
-  // Configure the GridDisplay the way we like it.
-  grid_->subProp( "Line Style" )->setValue( "Billboards" );
-  grid_->subProp( "Color" )->setValue( QColor( Qt::yellow ) );
+  // // Configure the GridDisplay the way we like it.
+  // grid_->subProp( "Line Style" )->setValue( "Billboards" );
+  // grid_->subProp( "Color" )->setValue( QColor( Qt::yellow ) );
 
-/////////////////////////////////////////////////////////reading robot_list from param_server /////////////////////////
-  // bool is_robot_list, use_sim_time;
-  // is_robot_list = ros::param::has("/robot_list") ; //ros::param::has("/robot_list");
-  // ROS_INFO("%i",is_robot_list);
-  
-  // std::string robot_list;
-  // //ros::Rate r(1); // 1 hz
-  // // while (!ros::param::get("/robot_list",robot_list))
-  // // {
-  // //   //ros::spinOnce();
-  // //   r.sleep();
-  // // }
-  // ros::param::get("/robot_list",robot_list);
-  // ROS_INFO("%s",robot_list.data());
-
-  // sleep(2);
-  
-  // while(robot_list.empty())
-  // {
-  //   ros::param::get("/robot_list",robot_list);
-  //   ROS_INFO("%s",robot_list.data());
-  //   sleep(1);
-  // }
-  // ROS_INFO("%s",robot_list.data());
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
   //reading the robot_list from the parameter server
   std::string robot_list;
   ros::param::get("/robot_list",robot_list);
   ROS_INFO("%s",robot_list.data());
 
   rviz::DisplayGroup* root_disp_group_  = manager_->getRootDisplayGroup();
-  int rootChildNum = root_disp_group_->numChildren();
-  ROS_INFO("%i",rootChildNum);
-  rviz::Display* dispTemp = root_disp_group_->getDisplayAt(0);
-  ROS_INFO("%s",dispTemp->getNameStd().data());
-  ROS_INFO("%s",root_disp_group_->getDisplayAt(1)->getNameStd().data());
+  // int rootChildNum = root_disp_group_->numChildren();
+  // ROS_INFO("%i",rootChildNum);
+  // rviz::Display* dispTemp = root_disp_group_->getDisplayAt(0);
+  // ROS_INFO("%s",dispTemp->getNameStd().data());
+  // ROS_INFO("%s",root_disp_group_->getDisplayAt(1)->getNameStd().data());
   viz_frame_->setStatus("oooolalalala"); //sets the status message displayed in the status bar at the bottom
 
-  rviz::DisplayGroup* rdg01 = new rviz::DisplayGroup();
-  rdg01->setName("rdg01");
-  rdg01->initialize(manager_);
-  rdg01->setEnabled(1);
-  rviz::PropertyTreeModel* dispTree = manager_->getDisplayTreeModel();
-  rviz::Property* root_prop = dispTree->getRoot();
-  ROS_INFO("%s",root_prop->getNameStd().data());
-  //dispTree->beginInsert(rdg01, rviz::Display::numChildren);
-  
-  rviz::Display* scan_ = rdg01->createDisplay("rviz/LaserScan"); 
-  rdg01->addDisplay(scan_);
-  scan_->initialize(manager_);
-  scan_->setEnabled(1);
-  scan_->setName("Laser Scan");
-  scan_->subProp( "Topic" )->setValue( "/rdg01/front/scan" );
+  //creating a new RobotDisplayGroup
+  RobotDisplayGroup* rdg01 = new RobotDisplayGroup(std::string("rdg01"), manager_);
 
   root_disp_group_->addChild(rdg01);
 
@@ -124,3 +111,10 @@ void DynaRviz::setCellSize( int cell_size_percent )
     grid_->subProp( "Cell Size" )->setValue( cell_size_percent / 10.0f );
   }
 }
+
+
+
+//   rviz::PropertyTreeModel* dispTree = manager_->getDisplayTreeModel();
+//   rviz::Property* root_prop = dispTree->getRoot();
+//   ROS_INFO("%s",root_prop->getNameStd().data());
+//   //dispTree->beginInsert(rdg01, rviz::Display::numChildren);
