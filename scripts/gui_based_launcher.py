@@ -664,6 +664,10 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm, robot_list = robot_list_string)
         #endregion
 
+        # Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object
+        dynaRviz_node = roslaunch.core.Node('multi_robot_sim','dynaRviz',name='Rviz',output="screen")
+        self.gzb.launch.launch(dynaRviz_node)
+
     def shutdown_nodes(self):
         """Shuts down the launched nodes, starting with robot nodes, ending with Gazebo."""
         print("Starting shutdown sequence.")
