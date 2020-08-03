@@ -158,6 +158,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 ## The recommended prefix ensures that target names across packages don't collide
 set(SRC_FILES
   src/dynaRviz.cpp
+  src/robotDisplayGroup.cpp
   src/main.cpp
 )
 add_executable(dynaRviz ${SRC_FILES})
