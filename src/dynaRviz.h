@@ -5,8 +5,6 @@
 
 namespace rviz
 {
-class Display;
-class RenderPanel;
 class VisualizationManager;
 class VisualizationFrame;
 class DisplayGroup;
@@ -20,15 +18,10 @@ public:
   DynaRviz( QWidget* parent = 0 );
   virtual ~DynaRviz();
 
-private Q_SLOTS:
-  void setThickness( int thickness_percent );
-  void setCellSize( int cell_size_percent );
-
 private:
-  rviz::VisualizationFrame* viz_frame_;
+  rviz::VisualizationFrame* vizFrame_;
   rviz::VisualizationManager* manager_;
-  rviz::DisplayGroup* root_disp_group_;
-  rviz::Display* grid_;
+  rviz::DisplayGroup* rootDisplayGroup_;
 };
 
 #endif // DYNARVIZ_H
