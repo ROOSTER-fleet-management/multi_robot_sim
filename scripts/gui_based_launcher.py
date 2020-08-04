@@ -626,7 +626,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         1. Prepares the launching of Gazebo.
         2. Sets the Gazebo world map.
         3. Launches Gazebo
-        4. Sets up the robot_list_string based on the launch list
+        4. Sets up the robot_list based on the launch list
         5. Loops over the launch list, launching the robot instances.
         """
         print("Starting launch sequence.")
@@ -651,17 +651,16 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         #endregion
 
         #region Robot launching
-        # Set up the robot list (string) based on the launch_list
-        robot_list_string = "["
+        # Set up the robot list (list of strings) based on the launch_list
+        robot_list = []
         for robot in self.launch_list:
-            robot_list_string += robot.id + ","
-        robot_list_string += "]"
-        rospy.set_param("/robot_list", robot_list_string)
+            robot_list.append(robot.id)
+        rospy.set_param("/robot_list", robot_list)
 
         # Loop through robot list and spawn the robots
         for robot in self.launch_list:
             sfm_mpdm = "True" if self.robot_navigation_dict[robot.id] == "SFM-MPDM" else "False"
-            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm, robot_list = robot_list_string)
+            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm)
         #endregion
 
         # Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object
