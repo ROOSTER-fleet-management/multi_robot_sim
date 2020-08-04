@@ -49,6 +49,9 @@ from JSONtoRosparam.LocationLoader import set_up_locations
 # DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)
 # DONE 25. Update about screen to include the nice icon.
 # DONE 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)
+# DONE 27. Connect functionality of checkmark button for Rviz + QoL
+# DONE 28. Connect functionality of checkmark button for Fleet Manager + QoL
+# DONE 29. Connect functionality of checkmark button for Gazebo GUI  + QoL
 #endregion ##########################################################################
 
 VERSION = "1.0"
@@ -120,6 +123,10 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.comboBoxDockingStationLaunch.setStatusTip("The id of the docking station.")
         self.checkBoxSFMMPDM.setStatusTip("Which navigation stack to use: Checked = SFM-MPDM, Unchecked = move_base.")
         self.spinBoxRobotID.setStatusTip("The numerical part of the robot id, can be anywhere between 01 and 99.")
+        self.checkBoxFleetManager.setStatusTip("Also launch the Fleet Manager from the simple_sim package.")       
+        self.checkBoxRviz.setStatusTip("Also dynamically launch Rviz based on the Launch list.")       
+        self.checkBoxGazeboGUI.setStatusTip("Launch Gazebo visually (default checked), or only in the background.")       
+
         #endregion
 
         #region DOCKING STATION TAB
@@ -290,6 +297,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.btnShutdown.setEnabled(True)
         self.btnAddRobot.setEnabled(False)
         self.btnClearLaunchList.setEnabled(False)
+        self.checkBoxRviz.setEnabled(False)
+        self.checkBoxGazeboGUI.setEnabled(False)
+        self.checkBoxFleetManager.setEnabled(False)
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         is_unique = True
@@ -356,6 +366,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.btnShutdown.setEnabled(False)
         self.btnAddRobot.setEnabled(True)
         self.btnClearLaunchList.setEnabled(True)
+        self.checkBoxRviz.setEnabled(True)
+        self.checkBoxGazeboGUI.setEnabled(True)
+        self.checkBoxFleetManager.setEnabled(True)
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         is_unique = True
@@ -633,7 +646,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
         #region Gazebo launching
         # Launching gazebo simulator with specified world
-        gui = True 
+        gui = True if self.checkBoxGazeboGUI.isChecked() else False
         use_sim_time = True
         headless = False 
         world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'
@@ -664,15 +677,23 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         #endregion
 
         # Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object
-        dynaRviz_node = roslaunch.core.Node('multi_robot_sim','dynaRviz',name='Rviz',output="screen")
-        self.gzb.launch.launch(dynaRviz_node)
+        if self.checkBoxRviz.isChecked():
+            dynaRviz_node = roslaunch.core.Node('multi_robot_sim','dynaRviz',name='Rviz',output="screen")
+            self.gzb.launch.launch(dynaRviz_node)
+
+        if self.checkBoxFleetManager.isChecked():        
+            self.fleet_manager_launch = roslaunch.scriptapi.ROSLaunch()
+            self.fleet_manager_launch.parent = roslaunch.parent.ROSLaunchParent(uuid, [r.get_path("simple_sim")+'/launch/fleet_manager.launch'])
+            self.fleet_manager_launch.start()
 
     def shutdown_nodes(self):
         """Shuts down the launched nodes, starting with robot nodes, ending with Gazebo."""
         print("Starting shutdown sequence.")
         for robot in self.launch_list:      # Shut down robots
             robot.shutdown()
-        self.gzb.launch.parent.shutdown()   # Shut down Gazebo
+        self.gzb.launch.parent.shutdown()   # Shut down Gazebo, map server and Rviz
+        if self.checkBoxFleetManager.isChecked():
+            self.fleet_manager_launch.parent.shutdown()  # Shut down Fleet Manager. 
 
 if __name__ == '__main__':
     try:
