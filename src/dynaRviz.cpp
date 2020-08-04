@@ -50,7 +50,7 @@ DynaRviz::DynaRviz( QWidget* parent )
   //Adding Marker Array display
   std::string locationArrayTopic_ = "/visualization_marker_array";
   rviz::Display* locationArray_ = manager_->createDisplay("rviz/MarkerArray","Locations", 1);
-  locationArray_->subProp( "Topic" )->setValue( locationArrayTopic_.data() );
+  locationArray_->subProp( "Marker Topic" )->setValue( locationArrayTopic_.data() );
 
   
   //creating a vector of RobotDisplayGroups for each robot in the robot_list and adding the RobotDisplayGroups to the rootDisplayGroup
