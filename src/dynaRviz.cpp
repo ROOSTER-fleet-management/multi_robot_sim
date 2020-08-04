@@ -42,6 +42,17 @@ DynaRviz::DynaRviz( QWidget* parent )
   //obtaining the rootDisplayGroup from the visualization manager
   rviz::DisplayGroup* rootDisplayGroup_  = manager_->getRootDisplayGroup();
   
+  //Adding Map display
+  std::string mapTopic_ = "/map";
+  rviz::Display* map_ = manager_->createDisplay("rviz/Map","Map", 1);
+  map_->subProp( "Topic" )->setValue( mapTopic_.data() );
+
+  //Adding Marker Array display
+  std::string locationArrayTopic_ = "/visualization_marker_array";
+  rviz::Display* locationArray_ = manager_->createDisplay("rviz/MarkerArray","Locations", 1);
+  locationArray_->subProp( "Topic" )->setValue( locationArrayTopic_.data() );
+
+  
   //creating a vector of RobotDisplayGroups for each robot in the robot_list and adding the RobotDisplayGroups to the rootDisplayGroup
   std::vector<RobotDisplayGroup*> RobotDisplayGroupVector;
   RobotDisplayGroupVector.resize(robotListVector.size());
