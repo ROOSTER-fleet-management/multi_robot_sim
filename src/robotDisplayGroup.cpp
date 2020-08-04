@@ -16,7 +16,6 @@ RobotDisplayGroup::RobotDisplayGroup(std::string robotId, rviz::VisualizationMan
     robotModel_->setName("Robot Model");
     robotModel_->subProp( "Robot Description" )->setValue( modelParameter_.data() );
     
-
     //Creating robot footprint display
     footprintTopic_ = "/"+robotId_+"/move_base/local_costmap/footprint";
     robotFootprint_ = this->createDisplay("rviz/Polygon");

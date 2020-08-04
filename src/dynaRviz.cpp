@@ -9,7 +9,6 @@
 #include "rviz/display.h"
 #include <string>
 #include <vector>
-#include <sstream>
 
 #include "dynaRviz.h"
 #include "robotDisplayGroup.h"
@@ -29,36 +28,24 @@ DynaRviz::DynaRviz( QWidget* parent )
   // Set the top-level layout for this DynaRviz widget.
   setLayout( main_layout );
 
-  //reading the robot_list from the parameter server into an std::string
-  std::string robotListString;
-  ros::param::get("/robot_list",robotListString);
+  //reading the robot_list from the parameter server 
+  std::vector<std::string> robotListVector; 
+  ros::param::get("/robot_list",robotListVector);
 
-  //Extracting substrings into a vector of strings
-  std::stringstream robotListStringStream( robotListString );
-  std::vector<std::string> robotListStringVector;
-  while( robotListStringStream.good() )
-    {
-      std::string substr;
-      getline( robotListStringStream, substr, ',' );
-      robotListStringVector.push_back( substr );
-    }
-  robotListStringVector.resize(robotListStringVector.size()-1);
-  robotListStringVector[0].erase(robotListStringVector[0].begin());
-
-  //ROS_INFO("size of robotlistvector = %lu",robotListStringVector.size());
-  // for(std::size_t i = 0; i < robotListStringVector.size(); i++)
+  // printing out the robot_ids for debugging 
+  // ROS_INFO("size of robotlistvector = %lu",robotListVector.size());
+  // for(std::size_t i = 0; i < robotListVector.size(); i++)
   // {
-  //   ROS_INFO("%s",robotListStringVector[i].data());
+  //   ROS_INFO("%s",robotListVector[i].data());
   // }
-  
   
   //obtaining the rootDisplayGroup from the visualization manager
   rviz::DisplayGroup* rootDisplayGroup_  = manager_->getRootDisplayGroup();
   
   //creating a vector of RobotDisplayGroups for each robot in the robot_list and adding the RobotDisplayGroups to the rootDisplayGroup
   std::vector<RobotDisplayGroup*> RobotDisplayGroupVector;
-  RobotDisplayGroupVector.resize(robotListStringVector.size());
-  for (std::string robotId : robotListStringVector)
+  RobotDisplayGroupVector.resize(robotListVector.size());
+  for (std::string robotId : robotListVector)
   {
     RobotDisplayGroup* tempPointer = new RobotDisplayGroup(robotId.data(), manager_);
     RobotDisplayGroupVector.push_back(tempPointer);
