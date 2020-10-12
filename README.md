@@ -90,6 +90,6 @@ The dynaRviz application ... FIXME
 #### Planned
 The following items are planned to be implemented in the multi_robot_sim package:
 
-- [ ] Optional launching of the [Fleet Manager package](https://git.tu-delft.ne-kloud.de/denis.zatyagov/simple_sim/src/multi-test).
+- [ ] Optional launching of the [Fleet Manager package](https://git.tu-delft.ne-kloud.de/denis.zatyagov/rooster_fleet_manager/src/multi-test).
 - [ ] Optional launching of dynamic Rviz based on provided launch information (robots).
 - [ ] Expansion of the supported robot types.

@@ -123,7 +123,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.comboBoxDockingStationLaunch.setStatusTip("The id of the docking station.")
         self.checkBoxSFMMPDM.setStatusTip("Which navigation stack to use: Checked = SFM-MPDM, Unchecked = move_base.")
         self.spinBoxRobotID.setStatusTip("The numerical part of the robot id, can be anywhere between 01 and 99.")
-        self.checkBoxFleetManager.setStatusTip("Also launch the Fleet Manager from the simple_sim package.")       
+        self.checkBoxFleetManager.setStatusTip("Also launch the Fleet Manager from the rooster_fleet_manager package.")       
         self.checkBoxRviz.setStatusTip("Also dynamically launch Rviz based on the Launch list.")       
         self.checkBoxGazeboGUI.setStatusTip("Launch Gazebo visually (default checked), or only in the background.")       
 
@@ -683,7 +683,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
         if self.checkBoxFleetManager.isChecked():        
             self.fleet_manager_launch = roslaunch.scriptapi.ROSLaunch()
-            self.fleet_manager_launch.parent = roslaunch.parent.ROSLaunchParent(uuid, [r.get_path("simple_sim")+'/launch/fleet_manager.launch'])
+            self.fleet_manager_launch.parent = roslaunch.parent.ROSLaunchParent(uuid, [r.get_path("rooster_fleet_manager")+'/launch/fleet_manager.launch'])
             self.fleet_manager_launch.start()
 
     def shutdown_nodes(self):
