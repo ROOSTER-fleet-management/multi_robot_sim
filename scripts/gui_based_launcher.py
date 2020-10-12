@@ -15,6 +15,7 @@ from docking_station_class import DockingStation
 from transformations import Pose2d
 from robot_class import Robot
 from gazebo_class import Gazebo
+from JSONtoRosparam.LocationLoader import set_up_locations
 
 
 #region ############################## TODOLIST ##################################
@@ -47,12 +48,18 @@ from gazebo_class import Gazebo
 # DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.
 # DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)
 # DONE 25. Update about screen to include the nice icon.
+# DONE 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)
+# DONE 27. Connect functionality of checkmark button for Rviz + QoL
+# DONE 28. Connect functionality of checkmark button for Fleet Manager + QoL
+# DONE 29. Connect functionality of checkmark button for Gazebo GUI  + QoL
 #endregion ##########################################################################
 
 VERSION = "1.0"
 APPLICATION_TITLE = "multi_robot_sim launcher"
 
 print(APPLICATION_TITLE + ". Version: "+VERSION)
+
+set_up_locations()              # Load local JSON locations file and place in rosparam server.
 
 class launchStatus:             # Kind of like an enum but for python 2.7
     """Class that acts as an enum."""
@@ -116,6 +123,10 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.comboBoxDockingStationLaunch.setStatusTip("The id of the docking station.")
         self.checkBoxSFMMPDM.setStatusTip("Which navigation stack to use: Checked = SFM-MPDM, Unchecked = move_base.")
         self.spinBoxRobotID.setStatusTip("The numerical part of the robot id, can be anywhere between 01 and 99.")
+        self.checkBoxFleetManager.setStatusTip("Also launch the Fleet Manager from the simple_sim package.")       
+        self.checkBoxRviz.setStatusTip("Also dynamically launch Rviz based on the Launch list.")       
+        self.checkBoxGazeboGUI.setStatusTip("Launch Gazebo visually (default checked), or only in the background.")       
+
         #endregion
 
         #region DOCKING STATION TAB
@@ -286,6 +297,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.btnShutdown.setEnabled(True)
         self.btnAddRobot.setEnabled(False)
         self.btnClearLaunchList.setEnabled(False)
+        self.checkBoxRviz.setEnabled(False)
+        self.checkBoxGazeboGUI.setEnabled(False)
+        self.checkBoxFleetManager.setEnabled(False)
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         is_unique = True
@@ -352,6 +366,9 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         self.btnShutdown.setEnabled(False)
         self.btnAddRobot.setEnabled(True)
         self.btnClearLaunchList.setEnabled(True)
+        self.checkBoxRviz.setEnabled(True)
+        self.checkBoxGazeboGUI.setEnabled(True)
+        self.checkBoxFleetManager.setEnabled(True)
         root = self.robotTree.invisibleRootItem()
         child_count = root.childCount()
         is_unique = True
@@ -401,7 +418,7 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
             "<h2>"+APPLICATION_TITLE+"</h2>" \
             "</center>" \
             "The ROS package multi_robot_sim is created by the Human " \
-            "Robot Coproduction research group at the Industrial Design " \
+            "Robot Co-production research group at the Industrial Design " \
             "Engineering faculty of the Delft University of Technology." \
             "<p>Version: "+VERSION+"<br/>" \
             "License: Apache License version 2.0</p>"
@@ -622,14 +639,14 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         1. Prepares the launching of Gazebo.
         2. Sets the Gazebo world map.
         3. Launches Gazebo
-        4. Sets up the robot_list_string based on the launch list
+        4. Sets up the robot_list based on the launch list
         5. Loops over the launch list, launching the robot instances.
         """
         print("Starting launch sequence.")
 
         #region Gazebo launching
         # Launching gazebo simulator with specified world
-        gui = True 
+        gui = True if self.checkBoxGazeboGUI.isChecked() else False
         use_sim_time = True
         headless = False 
         world_name = r.get_path("ridgeback_gazebo")+'/worlds/ridgeback_race.world'
@@ -647,24 +664,36 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
         #endregion
 
         #region Robot launching
-        # Set up the robot list (string) based on the launch_list
-        robot_list_string = "["
+        # Set up the robot list (list of strings) based on the launch_list
+        robot_list = []
         for robot in self.launch_list:
-            robot_list_string += robot.id + ","
-        robot_list_string += "]"
+            robot_list.append(robot.id)
+        rospy.set_param("/robot_list", robot_list)
 
         # Loop through robot list and spawn the robots
         for robot in self.launch_list:
             sfm_mpdm = "True" if self.robot_navigation_dict[robot.id] == "SFM-MPDM" else "False"
-            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm, robot_list = robot_list_string)
+            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm)
         #endregion
+
+        # Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object
+        if self.checkBoxRviz.isChecked():
+            dynaRviz_node = roslaunch.core.Node('multi_robot_sim','dynaRviz',name='Rviz',output="screen")
+            self.gzb.launch.launch(dynaRviz_node)
+
+        if self.checkBoxFleetManager.isChecked():        
+            self.fleet_manager_launch = roslaunch.scriptapi.ROSLaunch()
+            self.fleet_manager_launch.parent = roslaunch.parent.ROSLaunchParent(uuid, [r.get_path("simple_sim")+'/launch/fleet_manager.launch'])
+            self.fleet_manager_launch.start()
 
     def shutdown_nodes(self):
         """Shuts down the launched nodes, starting with robot nodes, ending with Gazebo."""
         print("Starting shutdown sequence.")
         for robot in self.launch_list:      # Shut down robots
             robot.shutdown()
-        self.gzb.launch.parent.shutdown()   # Shut down Gazebo
+        self.gzb.launch.parent.shutdown()   # Shut down Gazebo, map server and Rviz
+        if self.checkBoxFleetManager.isChecked():
+            self.fleet_manager_launch.parent.shutdown()  # Shut down Fleet Manager. 
 
 if __name__ == '__main__':
     try:

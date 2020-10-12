@@ -1,0 +1,4 @@
+<launch>
+    <!--    Launching gui_based_launcher   -->
+    <node name="gui_based_launcher" pkg="multi_robot_sim" type="gui_based_launcher.py" output="screen"/>
+</launch>
