@@ -38,9 +38,9 @@ class Robot:
                 break
         return succesful_assignment
         
-    def launch(self, uuid, sfm_mpdm_enabled):
+    def launch(self, uuid, nav_package):
         """ This method launches the launch file of the robot """
-        self.sfm_mpdm_enabled = sfm_mpdm_enabled
+        self.nav_package = nav_package
 
         package = ""
         if self.type == 'rdg':      # Ridgeback, thus multi_ridgeback_nav
@@ -58,7 +58,7 @@ class Robot:
                     'scanTopic:=' + self.scan_topic ,
                     'baseFrame:=' + self.base_frame ,
                     'odomFrame:=' + self.odom_frame ,
-                    'sfm_mpdm_enabled:=' + self.sfm_mpdm_enabled,
+                    'nav_package:=' + self.nav_package
                     ]  
                     
         launch_args = launch_cmd[1:]

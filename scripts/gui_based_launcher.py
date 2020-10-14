@@ -672,8 +672,8 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
         # Loop through robot list and spawn the robots
         for robot in self.launch_list:
-            sfm_mpdm = "True" if self.robot_navigation_dict[robot.id] == "SFM-MPDM" else "False"
-            robot.launch(uuid, sfm_mpdm_enabled = sfm_mpdm)
+            nav_package = "sfm_mpdm" if self.robot_navigation_dict[robot.id] == "SFM-MPDM" else "move_base"
+            robot.launch(uuid, nav_package = nav_package)
         #endregion
 
         # Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object
