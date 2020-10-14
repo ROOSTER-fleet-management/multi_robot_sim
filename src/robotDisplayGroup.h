@@ -58,6 +58,9 @@ private:
     std::string localCostmapTopic_;
     rviz::Display* localCostmap_;
 
+    //Pertaining to Interactive Twist command marker display
+    std::string interactiveTwistMarkerTopic_;
+    rviz::Display* interactiveTwistMarker_;
 };
 
 

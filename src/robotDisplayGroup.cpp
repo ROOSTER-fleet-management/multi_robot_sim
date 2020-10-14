@@ -108,5 +108,18 @@ RobotDisplayGroup::RobotDisplayGroup(std::string robotId, rviz::VisualizationMan
     localCostmap_->setName("Local Costmap");
     localCostmap_->subProp( "Topic" )->setValue( localCostmapTopic_.data() );
     localCostmap_->subProp( "Color Scheme" )->setValue( "costmap" );
+
+    //creating interactive twist command marker display
+    interactiveTwistMarkerTopic_ = "/"+robotId_+"/twist_marker_server/update";
+    interactiveTwistMarker_ = this->createDisplay("rviz/InteractiveMarkers"); 
+    this->addDisplay(interactiveTwistMarker_);
+    interactiveTwistMarker_->initialize(manager_);
+    interactiveTwistMarker_->setEnabled(1);
+    interactiveTwistMarker_->setName("Teleoperation");
+    interactiveTwistMarker_->subProp("Update Topic")->setValue( interactiveTwistMarkerTopic_.data() );
+    interactiveTwistMarker_->subProp("Show Axes")->setValue( "false" );
+    interactiveTwistMarker_->subProp("Show Descriptions")->setValue( "false" );
+    interactiveTwistMarker_->subProp("Show Visual Aids")->setValue( "true" );
+    interactiveTwistMarker_->subProp("Enable Transparency")->setValue( "false" );
 }  
    
