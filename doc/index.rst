@@ -10,6 +10,8 @@ Welcome to multi_robot_sim's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   _source/SrcLandingPage
+
 
 
 Indices and tables
