@@ -57,10 +57,6 @@ from JSONtoRosparam.LocationLoader import set_up_locations
 VERSION = "1.0"
 APPLICATION_TITLE = "multi_robot_sim launcher"
 
-print(APPLICATION_TITLE + ". Version: "+VERSION)
-
-set_up_locations()              # Load local JSON locations file and place in rosparam server.
-
 class launchStatus:             # Kind of like an enum but for python 2.7
     """Class that acts as an enum."""
     AWAITING = "Awaiting launch..."
@@ -697,6 +693,10 @@ class GuiMainWindow(gui_launcher_node.Ui_MainWindow, QtGui.QMainWindow):
 
 if __name__ == '__main__':
     try:
+        print(APPLICATION_TITLE + ". Version: "+VERSION)
+        
+        set_up_locations()              # Load local JSON locations file and place in rosparam server.
+        
         # Initialize the node
         rospy.init_node('multi_robot_sim_launcher', anonymous=False)
     
