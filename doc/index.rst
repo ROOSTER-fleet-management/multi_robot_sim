@@ -7,7 +7,7 @@ Welcome to multi_robot_sim's documentation!
 ===========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    _source/SrcLandingPage
