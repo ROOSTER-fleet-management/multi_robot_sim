@@ -5,21 +5,14 @@
 #### Dependencies
 **multi_ridgeback_nav by @neel.nagda**
 
-The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://git.tu-delft.ne-kloud.de/neel.nagda/multi_ridgeback_nav/src/melodic-sfm-mpdm
+The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://github.com/ROOSTER-fleet-management/multi_ridgeback_nav/tree/master
 
 Install this package before continuing, carefully following the README.md instructions. 
 
 **mutli_husky_nav by @neel.nagda**
 
 This mutli_robot_sim package is dependend upon the multi_husky_nav package, which can be found here:
-https://git.tu-delft.ne-kloud.de/neel.nagda/multi_husky_nav/src/master
-
-Install this package before continuing, carefully following the README.md instructions.
-
-**sfm_mpdm by @patrick.keesmaat**
-
-The package is also dependend upon the sfm_mpdm package, which can be found here:
-https://git.tu-delft.ne-kloud.de/patrick.keesmaat/sfm_mpdm/src/master
+https://github.com/ROOSTER-fleet-management/multi_husky_nav/tree/master
 
 Install this package before continuing, carefully following the README.md instructions.
 
@@ -81,7 +74,7 @@ Shortcut | Explanation
 
 
 ***dynaRviz application.***<br/>
-The dynaRviz application ... FIXME
+The dynaRviz application is basically the normal RViz application except that it is launched dynamically based on the fleet as specified in the Multi Robot Sim Launcher GUI.
 <br/>
 
 
@@ -90,6 +83,6 @@ The dynaRviz application ... FIXME
 #### Planned
 The following items are planned to be implemented in the multi_robot_sim package:
 
-- [X] Optional launching of the [Fleet Manager package](https://git.tu-delft.ne-kloud.de/denis.zatyagov/rooster_fleet_manager/src/multi-test).
+- [X] Optional launching of the [Fleet Manager package](https://github.com/ROOSTER-fleet-management/rooster_fleet_manager/tree/master).
 - [X] Optional launching of dynamic Rviz based on provided launch information (robots).
 - [ ] Expansion of the supported robot types.
