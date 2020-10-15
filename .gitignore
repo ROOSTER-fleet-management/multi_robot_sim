@@ -1,3 +1,5 @@
 .vscode/
 justchecking*
 *.pyc
+doc/
+docs/
