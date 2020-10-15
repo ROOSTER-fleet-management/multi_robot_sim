@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>robot_class module &mdash; multi_robot_sim 0.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="docking_station_class module" href="docking_station_class.html" />
+    <link rel="prev" title="gui_based_launcher module" href="gui_based_launcher.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> multi_robot_sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../SrcLandingPage.html">ROS nodes and source code API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gui_based_launcher.html">gui_based_launcher module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">robot_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docking_station_class.html">docking_station_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gazebo_class.html">gazebo_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transformations.html">transformations module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JSONtoRosparam.html">JSONtoRosparam package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">ui package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">multi_robot_sim</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../SrcLandingPage.html">ROS nodes and source code API</a> &raquo;</li>
+        
+      <li>robot_class module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_source/scripts/robot_class.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-robot_class">
+<span id="robot-class-module"></span><h1>robot_class module<a class="headerlink" href="#module-robot_class" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="robot_class.Robot">
+<em class="property">class </em><code class="descclassname">robot_class.</code><code class="descname">Robot</code><span class="sig-paren">(</span><em>robot_id</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/robot_class.html#Robot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot_class.Robot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class encapsulates the data pertaining to a robot</p>
+<dl class="method">
+<dt id="robot_class.Robot.assign_cell">
+<code class="descname">assign_cell</code><span class="sig-paren">(</span><em>docking_station</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/robot_class.html#Robot.assign_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot_class.Robot.assign_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method assigns the robot to a docking cell in the specifed docking station</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="robot_class.Robot.launch">
+<code class="descname">launch</code><span class="sig-paren">(</span><em>uuid</em>, <em>nav_package</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/robot_class.html#Robot.launch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot_class.Robot.launch" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method launches the launch file of the robot</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="robot_class.Robot.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/robot_class.html#Robot.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot_class.Robot.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method brings down the nodes launched by the launch file</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="docking_station_class.html" class="btn btn-neutral float-right" title="docking_station_class module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="gui_based_launcher.html" class="btn btn-neutral float-left" title="gui_based_launcher module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Patrick, Neel
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

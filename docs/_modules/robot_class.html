@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>robot_class &mdash; multi_robot_sim 0.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> multi_robot_sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_source/SrcLandingPage.html">ROS nodes and source code API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">multi_robot_sim</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>robot_class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for robot_class</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">rospkg</span>
+<span class="kn">import</span> <span class="nn">roslaunch</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="c1"># creating instance of ROSPack class to resolve paths of ROS packages</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Robot"><a class="viewcode-back" href="../_source/scripts/robot_class.html#robot_class.Robot">[docs]</a><span class="k">class</span> <span class="nc">Robot</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; This class encapsulates the data pertaining to a robot &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">robot_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">robot_id</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_topic</span> <span class="o">=</span> <span class="s1">&#39;front/scan&#39;</span>  
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;rdg&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ridgeback_&#39;</span> <span class="o">+</span> <span class="n">robot_id</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scan_topic</span> <span class="o">=</span> <span class="s1">&#39;front/scan&#39;</span> 
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;hsk&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;husky_&#39;</span> <span class="o">+</span> <span class="n">robot_id</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scan_topic</span> <span class="o">=</span> <span class="s1">&#39;scan&#39;</span> 
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="n">robot_id</span>   <span class="c1"># namespace under which the nodes and topics of the robot will be launched</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+</span> <span class="s1">&#39;_tf&#39;</span> <span class="c1"># the coordinate frames of the robot will have this prefix</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_prefix</span> <span class="o">+</span><span class="s1">&#39;/base_link&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">odom_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_prefix</span> <span class="o">+</span><span class="s1">&#39;/odom&#39;</span> 
+        
+<div class="viewcode-block" id="Robot.assign_cell"><a class="viewcode-back" href="../_source/scripts/robot_class.html#robot_class.Robot.assign_cell">[docs]</a>    <span class="k">def</span> <span class="nf">assign_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docking_station</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This method assigns the robot to a docking cell in the specifed docking station &quot;&quot;&quot;</span>
+        <span class="n">succesful_assignment</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">station_id</span> <span class="o">=</span> <span class="n">docking_station</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">docking_station</span><span class="o">.</span><span class="n">cell</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">assigned</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cell_id</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cell_origin</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">origin</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">assigned</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">robot_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span>
+                <span class="n">succesful_assignment</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">succesful_assignment</span></div>
+        
+<div class="viewcode-block" id="Robot.launch"><a class="viewcode-back" href="../_source/scripts/robot_class.html#robot_class.Robot.launch">[docs]</a>    <span class="k">def</span> <span class="nf">launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">nav_package</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This method launches the launch file of the robot &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nav_package</span> <span class="o">=</span> <span class="n">nav_package</span>
+
+        <span class="n">package</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;rdg&#39;</span><span class="p">:</span>      <span class="c1"># Ridgeback, thus multi_ridgeback_nav</span>
+            <span class="n">package</span> <span class="o">=</span> <span class="s2">&quot;multi_ridgeback_nav&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;hsk&#39;</span><span class="p">:</span>    <span class="c1"># Husky, thus multi_husky_nav</span>
+            <span class="n">package</span> <span class="o">=</span> <span class="s2">&quot;multi_husky_nav&quot;</span>
+                
+        <span class="n">launch_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">package</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/launch/include/one_robot.launch&#39;</span><span class="p">,</span> 
+                    <span class="s1">&#39;namespace:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="p">,</span>
+                    <span class="s1">&#39;tfpre:=&#39;</span><span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_prefix</span> <span class="p">,</span>
+                    <span class="s1">&#39;robot_name:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="p">,</span>
+                    <span class="s1">&#39;initX:=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_origin</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="p">,</span> 
+                    <span class="s1">&#39;initY:=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_origin</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="p">,</span>
+                    <span class="s1">&#39;initYaw:=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_origin</span><span class="o">.</span><span class="n">theta</span><span class="p">),</span> 
+                    <span class="s1">&#39;scanTopic:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_topic</span> <span class="p">,</span>
+                    <span class="s1">&#39;baseFrame:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_frame</span> <span class="p">,</span>
+                    <span class="s1">&#39;odomFrame:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">odom_frame</span> <span class="p">,</span>
+                    <span class="s1">&#39;nav_package:=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nav_package</span>
+                    <span class="p">]</span>  
+                    
+        <span class="n">launch_args</span> <span class="o">=</span> <span class="n">launch_cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">launch_file</span> <span class="o">=</span> <span class="p">[(</span><span class="n">roslaunch</span><span class="o">.</span><span class="n">rlutil</span><span class="o">.</span><span class="n">resolve_launch_arguments</span><span class="p">(</span><span class="n">launch_cmd</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="n">launch_args</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">scriptapi</span><span class="o">.</span><span class="n">ROSLaunch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ROSLaunchParent</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">launch_file</span><span class="p">)</span>
+        <span class="c1">#Launching the robot with specified nodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Robot.shutdown"><a class="viewcode-back" href="../_source/scripts/robot_class.html#robot_class.Robot.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This method brings down the nodes launched by the launch file &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span></div></div>
+
+
+    <span class="c1"># def return_to_cell(self):</span>
+    <span class="c1">#     from geometry_msgs.msg import PoseStamped</span>
+    <span class="c1">#     topic = self.id + &#39;move_base_simple/goal&#39;</span>
+    <span class="c1">#     pub = rospy.Publisher(topic, PoseStamped, queue_size=10)</span>
+
+        
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Patrick, Neel
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

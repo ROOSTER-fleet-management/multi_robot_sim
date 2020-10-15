@@ -1,0 +1,452 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui_based_launcher module &mdash; multi_robot_sim 0.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="robot_class module" href="robot_class.html" />
+    <link rel="prev" title="ROS nodes and source code API" href="../SrcLandingPage.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> multi_robot_sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../SrcLandingPage.html">ROS nodes and source code API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gui_based_launcher module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robot_class.html">robot_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docking_station_class.html">docking_station_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gazebo_class.html">gazebo_class module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transformations.html">transformations module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JSONtoRosparam.html">JSONtoRosparam package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui.html">ui package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">multi_robot_sim</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../SrcLandingPage.html">ROS nodes and source code API</a> &raquo;</li>
+        
+      <li>gui_based_launcher module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_source/scripts/gui_based_launcher.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-gui_based_launcher">
+<span id="gui-based-launcher-module"></span><h1>gui_based_launcher module<a class="headerlink" href="#module-gui_based_launcher" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="gui_based_launcher.GuiMainWindow">
+<em class="property">class </em><code class="descclassname">gui_based_launcher.</code><code class="descname">GuiMainWindow</code><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ui.html#ui.gui_launcher_node.Ui_MainWindow" title="ui.gui_launcher_node.Ui_MainWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">ui.gui_launcher_node.Ui_MainWindow</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PyQt4.QtGui.QMainWindow</span></code></p>
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.about">
+<code class="descname">about</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.about"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.about" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display a MessageBox with the application title, version number and general information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.add_robot">
+<code class="descname">add_robot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.add_robot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.add_robot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a robot to the launch list tree widget based on the Launch tab input field values.
+Before adding, a check is performed to make sure the supplied robot ID is unique,
+if it is not unique, the user is notified with a MessageBox.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.clear_launch_tree">
+<code class="descname">clear_launch_tree</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.clear_launch_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.clear_launch_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the entire launch tree.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.closeEvent">
+<code class="descname">closeEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.closeEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.closeEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes control of the close event, making sure the user cannot close the application before prompting them.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.close_application">
+<code class="descname">close_application</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.close_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.close_application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prompts the user if they are sure they which to quit the application before quitting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.delete_launch_tree_item">
+<code class="descname">delete_launch_tree_item</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.delete_launch_tree_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.delete_launch_tree_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the currently selected item from the launch tree.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.docking_station_clicked">
+<code class="descname">docking_station_clicked</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.docking_station_clicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.docking_station_clicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger a GUI update based on the selected docking station ID.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.docking_station_value_changed">
+<code class="descname">docking_station_value_changed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.docking_station_value_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.docking_station_value_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger an docking station object attribute update based on the selected docking station ID</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.launch_nodes">
+<code class="descname">launch_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.launch_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.launch_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><ol class="arabic simple">
+<li>Prepares the launching of Gazebo.</li>
+<li>Sets the Gazebo world map.</li>
+<li>Launches Gazebo</li>
+<li>Sets up the robot_list based on the launch list</li>
+<li>Loops over the launch list, launching the robot instances.</li>
+</ol>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.launch_triggered">
+<code class="descname">launch_triggered</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.launch_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.launch_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the launching of nodes based on the robot items in the current launch list and docking station properties.
+Before launch: 
+1. Checks if the number of assigned robots does not exceed a docking stations capacity.
+2. Check if the launch list has any robots at all.
+If any issues are encountered, a MessageBox is displayed to the user informing them as such.
+Otherwise the created list of Robot class objects is launched by calling “launch_nodes()”.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.load_file">
+<code class="descname">load_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.load_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.load_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will load a setup from a JSON file, overwriting any unsaved changes of the current setup.
+1. Retrieve filename and filepath from user.
+2. Loads the JSON data into the loaddata_dict dictionary.
+3. Loops through the loaddata_dict, setting all Widget and QtObject fields.
+4. Populates the tree widget and updates the docking station objects.
+5. Resets the ‘unsaved changes’ flag.
+Before loading:
+1. Checks if the launch status isn’t currently launched.
+2. If there are any unsaved changes and prompt the user if they are sure if there are any.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.new_file">
+<code class="descname">new_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.new_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.new_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will clear all input field and the launch list,
+delete the docking station objects and initilise new default ones.
+Before clearing it checks:
+1. If the user is sure they want to clear the current setup with a question prompt.
+2. If the launch status isn’t currently launched.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.open_context_menu">
+<code class="descname">open_context_menu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.open_context_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.open_context_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the Right-Mouse-Button context menu, showing an option to delete the launch tree item.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.populate_docking_station_dict">
+<code class="descname">populate_docking_station_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.populate_docking_station_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.populate_docking_station_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the docking station dictionary with DockingStation class instances.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.save_file_as">
+<code class="descname">save_file_as</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.save_file_as"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.save_file_as" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will open the Qt save dialog, allow the user to input a save name, and save the current setup as .JSON
+1. Retrieve filename and filepath from user.
+2. Creates dictionaries for the launch list tree items and adds those to the launch tree dict.
+3. Creates dictionaries for the docking station objects and adds those to the docking station dict.
+4. Adds all widgets QtObjects and abovementioned dictionaries to the savedata_dict.
+5. “Dumps” the dictionary to a JSON file and resets ‘unsaved changes’ flag.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_combobox_from_JSON">
+<code class="descname">set_combobox_from_JSON</code><span class="sig-paren">(</span><em>obj</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_combobox_from_JSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_combobox_from_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to find the specified value in the combobox and sets the index to match</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_docking_stations_from_JSON">
+<code class="descname">set_docking_stations_from_JSON</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_docking_stations_from_JSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_docking_stations_from_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loops through the supplies dictionary and updates all docking station object instances.
+Finishes off by calling an update to the docking station GUI fields.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_launched_gui">
+<code class="descname">set_launched_gui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_launched_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_launched_gui" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the states and interactivity of the GUI according to the launch status (launched).
+Disabling: Launch button, Add robot button, Clear launch list button, launch list tree items.
+Enabling: Shutdown button.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_launchtree_from_JSON">
+<code class="descname">set_launchtree_from_JSON</code><span class="sig-paren">(</span><em>tree</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_launchtree_from_JSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_launchtree_from_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the launch tree and repopulates it from the supplied dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_shutdown_gui">
+<code class="descname">set_shutdown_gui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_shutdown_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_shutdown_gui" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the states and interactivity of the GUI according to the launch status (shutdown).
+Disabling: Shutdown button.
+Enabling: Launch button, Add robot button, Clear launch list button, launch list tree items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.set_value_silent">
+<code class="descname">set_value_silent</code><span class="sig-paren">(</span><em>QtObject</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.set_value_silent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.set_value_silent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Silently update an objects value by disconnecting and reconnecting the valueChanged triggers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.shutdown_nodes">
+<code class="descname">shutdown_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.shutdown_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.shutdown_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuts down the launched nodes, starting with robot nodes, ending with Gazebo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.shutdown_triggered">
+<code class="descname">shutdown_triggered</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.shutdown_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.shutdown_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prompts the user if they are sure they want to shut down, and if so; shuts down the currently active nodes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.unsaved_changes_active">
+<code class="descname">unsaved_changes_active</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.unsaved_changes_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.unsaved_changes_active" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the unsaved changes flag and add * to the window title.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.unsaved_changes_inactive">
+<code class="descname">unsaved_changes_inactive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.unsaved_changes_inactive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.unsaved_changes_inactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the unsaved changes flag to false, remove the * from the window title.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.update_docking_station_gui">
+<code class="descname">update_docking_station_gui</code><span class="sig-paren">(</span><em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.update_docking_station_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.update_docking_station_gui" title="Permalink to this definition">¶</a></dt>
+<dd><p>The selected docking station has changed, thus silently update all input fields to match the objects variables.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui_based_launcher.GuiMainWindow.update_docking_station_object">
+<code class="descname">update_docking_station_object</code><span class="sig-paren">(</span><em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gui_based_launcher.html#GuiMainWindow.update_docking_station_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.GuiMainWindow.update_docking_station_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A change was made to any of the input values for the docking station. Thus update the docking station object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gui_based_launcher.launchStatus">
+<em class="property">class </em><code class="descclassname">gui_based_launcher.</code><code class="descname">launchStatus</code><a class="reference internal" href="../../_modules/gui_based_launcher.html#launchStatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gui_based_launcher.launchStatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that acts as an enum.</p>
+<dl class="attribute">
+<dt id="gui_based_launcher.launchStatus.AWAITING">
+<code class="descname">AWAITING</code><em class="property"> = 'Awaiting launch...'</em><a class="headerlink" href="#gui_based_launcher.launchStatus.AWAITING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="gui_based_launcher.launchStatus.LAUNCHED">
+<code class="descname">LAUNCHED</code><em class="property"> = 'Launched'</em><a class="headerlink" href="#gui_based_launcher.launchStatus.LAUNCHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="gui_based_launcher.launchStatus.SHUTDOWN">
+<code class="descname">SHUTDOWN</code><em class="property"> = 'Shutdown'</em><a class="headerlink" href="#gui_based_launcher.launchStatus.SHUTDOWN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="robot_class.html" class="btn btn-neutral float-right" title="robot_class module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../SrcLandingPage.html" class="btn btn-neutral float-left" title="ROS nodes and source code API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Patrick, Neel
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

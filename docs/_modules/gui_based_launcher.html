@@ -1,0 +1,929 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui_based_launcher &mdash; multi_robot_sim 0.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> multi_robot_sim
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_source/SrcLandingPage.html">ROS nodes and source code API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">multi_robot_sim</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>gui_based_launcher</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gui_based_launcher</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">math</span>     <span class="c1"># for trigonometric evaluations</span>
+<span class="kn">import</span> <span class="nn">json</span>     <span class="c1"># Used for reading and writing JSON files (saving and loading setups)</span>
+<span class="kn">import</span> <span class="nn">os</span>       <span class="c1"># Used to get base filename and file and directory handling</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">roslaunch</span>
+<span class="kn">import</span> <span class="nn">rospkg</span>   <span class="c1"># for resolving paths to ROS packages </span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">ui</span> <span class="kn">import</span> <span class="n">gui_launcher_node</span>
+<span class="kn">from</span> <span class="nn">docking_station_class</span> <span class="kn">import</span> <span class="n">DockingStation</span>
+<span class="kn">from</span> <span class="nn">transformations</span> <span class="kn">import</span> <span class="n">Pose2d</span>
+<span class="kn">from</span> <span class="nn">robot_class</span> <span class="kn">import</span> <span class="n">Robot</span>
+<span class="kn">from</span> <span class="nn">gazebo_class</span> <span class="kn">import</span> <span class="n">Gazebo</span>
+<span class="kn">from</span> <span class="nn">JSONtoRosparam.LocationLoader</span> <span class="kn">import</span> <span class="n">set_up_locations</span>
+
+
+<span class="c1">#region ############################## TODOLIST ##################################</span>
+<span class="c1"># DONE 1. Add question &#39; are you sure &#39;  on shutdown.</span>
+<span class="c1"># DONE 2. Add question prompt &#39; Are you sure&#39;  on Quit application</span>
+<span class="c1"># DONE 3. Add about popup information</span>
+<span class="c1"># DONE 4. Add right mouse button delete items from launch tree</span>
+<span class="c1"># DONE 5. Add launch tree item adding. </span>
+<span class="c1"># DONE 6. Change launch status labeltext and labelicon based on launch_status variable.</span>
+<span class="c1"># DONE 7. Add clearing everything when clicking the &#39;New&#39; button in the File menu with question prompt if they are sure.</span>
+<span class="c1"># DONE 8. Add saving and loading of docking station variables based on comboBox robot type.</span>
+<span class="c1"># DONE 9. Add saving and loading of the launch tree</span>
+<span class="c1"># DONE 10. Combine saving and loading of launch tree and all docking station variables to the File &gt; Save and File &gt; Load menu, allowing to save and load to and from a file.</span>
+<span class="c1"># DONE 10a. Saving of launch tree, gui status and docking stations to JSON.</span>
+<span class="c1"># DONE 10b. Loading of launch tree, gui status and docking stations from JSON.</span>
+<span class="c1"># DONE 11. Add an icon to the application.</span>
+<span class="c1"># DONE 12. Add status tips where needed.</span>
+<span class="c1"># DONE 13. Make a nice icon for the application (256x256 png)</span>
+<span class="c1"># DONE 14. Add check to make sure clicking launch while already launched won&#39;t work. Disable button?</span>
+<span class="c1"># DONE 15. Disable items in robotTree, add robot button and clear list button when launched.</span>
+<span class="c1"># DONE 16. Upon launch iterate over the launch list and instantiate robot class objects.</span>
+<span class="c1"># DONE 17. Implement &quot;multi_robot_sim_launcher.py&quot; functionality inside this script</span>
+<span class="c1"># DONE 17a. Add docking station dictionairy</span>
+<span class="c1"># DONE 17b. Attach robot_class.launch method to the right GUI elements.</span>
+<span class="c1"># DONE 18. Add check for changes made to the current setup (change in docking station or change in launch list) with &#39;unsaved changed&#39; flag.</span>
+<span class="c1"># DONE 19. Add * to window title when unsaved changes are present (&#39;unsaved changes&#39; flag is true)</span>
+<span class="c1"># DONE 20. Reset &#39;unsaved changes&#39; flag upon save[X], load[X] and new file[X].</span>
+<span class="c1"># TODO 21. Fix/change the hardcoded docking station locations to something more suitable.</span>
+<span class="c1"># DONE 22. Add docstrings to all methods according to PEP8.</span>
+<span class="c1"># DONE 23. Add check to make sure the number of assigned robots to a docking station does not exceed the docking station capacity.</span>
+<span class="c1"># DONE 24. Remove unnecessary/redundant python scripts from package (gui_test.py, multi_robot_sim_launcher.py)</span>
+<span class="c1"># DONE 25. Update about screen to include the nice icon.</span>
+<span class="c1"># DONE 26. Read locations JSON, store as list_string into rosparam server /locations/loc01, etc.. using roslaunch file(?)</span>
+<span class="c1"># DONE 27. Connect functionality of checkmark button for Rviz + QoL</span>
+<span class="c1"># DONE 28. Connect functionality of checkmark button for Fleet Manager + QoL</span>
+<span class="c1"># DONE 29. Connect functionality of checkmark button for Gazebo GUI  + QoL</span>
+<span class="c1">#endregion ##########################################################################</span>
+
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;1.0&quot;</span>
+<span class="n">APPLICATION_TITLE</span> <span class="o">=</span> <span class="s2">&quot;multi_robot_sim launcher&quot;</span>
+
+<div class="viewcode-block" id="launchStatus"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.launchStatus">[docs]</a><span class="k">class</span> <span class="nc">launchStatus</span><span class="p">:</span>             <span class="c1"># Kind of like an enum but for python 2.7</span>
+    <span class="sd">&quot;&quot;&quot;Class that acts as an enum.&quot;&quot;&quot;</span>
+    <span class="n">AWAITING</span> <span class="o">=</span> <span class="s2">&quot;Awaiting launch...&quot;</span>
+    <span class="n">LAUNCHED</span> <span class="o">=</span> <span class="s2">&quot;Launched&quot;</span>
+    <span class="n">SHUTDOWN</span> <span class="o">=</span> <span class="s2">&quot;Shutdown&quot;</span></div>
+
+<span class="n">launch_status</span> <span class="o">=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">AWAITING</span>
+
+<div class="viewcode-block" id="GuiMainWindow"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow">[docs]</a><span class="k">class</span> <span class="nc">GuiMainWindow</span><span class="p">(</span><span class="n">gui_launcher_node</span><span class="o">.</span><span class="n">Ui_MainWindow</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the ui widgets, items and varibles.</span>
+<span class="sd">        Connect up all UI interactions to their methods. Define status tips.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GuiMainWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1"># Unsaved changes flag, true if the file has been edited since last save.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;Untitled.JSON&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">APPLICATION_TITLE</span><span class="p">)</span>
+
+        <span class="c1"># Set up launch_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Set up docking stations objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">populate_docking_station_dict</span><span class="p">()</span>
+
+        <span class="c1"># Set up gui</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1">#region LAUNCH TAB</span>
+        <span class="c1"># Set up and connect gui widgets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusIcon</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s2">&quot;:/icons/How-to.png&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnClearLaunchList</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_launch_tree</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnLaunch</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">launch_triggered</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnShutdown</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shutdown_triggered</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">setContextMenuPolicy</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CustomContextMenu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">customContextMenuRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_context_menu</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnAddRobot</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_robot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnShutdown</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># TreeWidget context menu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treeMenu</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMenu</span><span class="p">(</span><span class="s1">&#39;Menu&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">deleteItem</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;&amp;Delete&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">deleteItem</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Delete item from Launch list&quot;</span><span class="p">)</span>
+        <span class="n">deleteItem</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delete_launch_tree_item</span><span class="p">)</span>
+        <span class="n">deleteIcon</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">()</span>
+        <span class="n">deleteIcon</span><span class="o">.</span><span class="n">addPixmap</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s2">&quot;:/icons/Close.png&quot;</span><span class="p">))</span>
+        <span class="n">deleteItem</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="n">deleteIcon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treeMenu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">deleteItem</span><span class="p">)</span>
+
+        <span class="c1"># Set statustips</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnClearLaunchList</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Clears all the robots in the launch list.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnAddRobot</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Add a robot with the selected properties to the launch list.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnLaunch</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Launches Gazebo and robots based on the current launch list and docking station properties.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnShutdown</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Shuts down launched robots and Gazebo.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;The type of robot which is to be added to the launch list.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;The id of the docking station.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Which navigation stack to use: Checked = SFM-MPDM, Unchecked = move_base.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;The numerical part of the robot id, can be anywhere between 01 and 99.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxFleetManager</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Also launch the Fleet Manager from the rooster_fleet_manager package.&quot;</span><span class="p">)</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxRviz</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Also dynamically launch Rviz based on the Launch list.&quot;</span><span class="p">)</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxGazeboGUI</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Launch Gazebo visually (default checked), or only in the background.&quot;</span><span class="p">)</span>       
+
+        <span class="c1">#endregion</span>
+
+        <span class="c1">#region DOCKING STATION TAB</span>
+        <span class="c1"># Connect gui widgets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentIndexChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_clicked</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerColumn</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerRow</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxDockingStationOriginTheta</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotOffsetSpacingTheta</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginX</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginY</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingX</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingY</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_docking_station_gui</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentText</span><span class="p">())])</span>
+
+        <span class="c1"># Set statustips </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Select the id of the docking station which you wish to edit its properties of.&quot;</span><span class="p">)</span>
+        <span class="c1">#endregion</span>
+
+        <span class="c1">#region File menu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionNew</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Clear current setup and start with a fresh one. Note: Any unsaved changes will be lost!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionNew</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionSave_file</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Save current launch and docking station setup to a file.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionSave_file</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_file_as</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionLoad_file</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Open an existing setup file. Note: Any unsaved changes will be lost!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionLoad_file</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionAbout</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Popup window with additional information.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionAbout</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">about</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionQuit_application</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Quit the application. Note: Any unsaved changes will be lost!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionQuit_application</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">close_application</span><span class="p">)</span>
+        <span class="c1">#endregions</span>
+
+        <span class="c1"># After all changes made loading the GUI elements, reset the unsaved_changes flag.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_inactive</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="GuiMainWindow.populate_docking_station_dict"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.populate_docking_station_dict">[docs]</a>    <span class="k">def</span> <span class="nf">populate_docking_station_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Populate the docking station dictionary with DockingStation class instances.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ds01&quot;</span><span class="p">:</span> <span class="n">DockingStation</span><span class="p">(</span><span class="s1">&#39;ds01&#39;</span><span class="p">,</span><span class="n">Pose2d</span><span class="p">(</span><span class="mf">9.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.5</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)),</span>
+            <span class="s2">&quot;ds02&quot;</span><span class="p">:</span> <span class="n">DockingStation</span><span class="p">(</span><span class="s1">&#39;ds02&#39;</span><span class="p">,</span><span class="n">Pose2d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">1.0</span><span class="p">)),</span>
+            <span class="s2">&quot;ds03&quot;</span><span class="p">:</span> <span class="n">DockingStation</span><span class="p">(</span><span class="s1">&#39;ds03&#39;</span><span class="p">,</span><span class="n">Pose2d</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mf">1.5</span><span class="p">))</span>
+        <span class="p">}</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.unsaved_changes_active"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.unsaved_changes_active">[docs]</a>    <span class="k">def</span> <span class="nf">unsaved_changes_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the unsaved changes flag and add * to the window title.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;* - &quot;</span> <span class="o">+</span> <span class="n">APPLICATION_TITLE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.unsaved_changes_inactive"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.unsaved_changes_inactive">[docs]</a>    <span class="k">def</span> <span class="nf">unsaved_changes_inactive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the unsaved changes flag to false, remove the * from the window title.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">APPLICATION_TITLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.docking_station_clicked"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.docking_station_clicked">[docs]</a>    <span class="k">def</span> <span class="nf">docking_station_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trigger a GUI update based on the selected docking station ID.&quot;&quot;&quot;</span>
+        <span class="n">selected_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentText</span><span class="p">())]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_docking_station_gui</span><span class="p">(</span><span class="n">selected_ds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.docking_station_value_changed"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.docking_station_value_changed">[docs]</a>    <span class="k">def</span> <span class="nf">docking_station_value_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Trigger an docking station object attribute update based on the selected docking station ID&quot;&quot;&quot;</span>
+        <span class="n">selected_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentText</span><span class="p">())]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_docking_station_object</span><span class="p">(</span><span class="n">selected_ds</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.update_docking_station_gui"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.update_docking_station_gui">[docs]</a>    <span class="k">def</span> <span class="nf">update_docking_station_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The selected docking station has changed, thus silently update all input fields to match the objects variables.&quot;&quot;&quot;</span>
+        <span class="n">ds_id</span><span class="p">,</span> <span class="n">ds_origin_x</span><span class="p">,</span> <span class="n">ds_origin_y</span><span class="p">,</span> <span class="n">ds_origin_theta_rad</span><span class="p">,</span> <span class="n">ds_rows</span><span class="p">,</span> <span class="n">ds_columns</span><span class="p">,</span> <span class="n">ds_cell_offset_x</span><span class="p">,</span> <span class="n">ds_cell_offset_y</span><span class="p">,</span> <span class="n">ds_cell_theta_rad</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginX</span><span class="p">,</span> <span class="n">ds_origin_x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginY</span><span class="p">,</span> <span class="n">ds_origin_y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxDockingStationOriginTheta</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">ds_origin_theta_rad</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingX</span><span class="p">,</span> <span class="n">ds_cell_offset_x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingY</span><span class="p">,</span> <span class="n">ds_cell_offset_y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotOffsetSpacingTheta</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">ds_cell_theta_rad</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerRow</span><span class="p">,</span> <span class="n">ds_rows</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerColumn</span><span class="p">,</span> <span class="n">ds_columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_active</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.update_docking_station_object"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.update_docking_station_object">[docs]</a>    <span class="k">def</span> <span class="nf">update_docking_station_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A change was made to any of the input values for the docking station. Thus update the docking station object.&quot;&quot;&quot;</span>
+        <span class="n">ds_id</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">ds_origin_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginX</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_origin_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxDockingStationOriginY</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_origin_theta_deg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxDockingStationOriginTheta</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerRow</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotsPerColumn</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_cell_offset_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingX</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_cell_offset_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doubleSpinBoxRobotOffsetSpacingY</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_cell_offset_theta_deg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotOffsetSpacingTheta</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="n">ds_origin</span> <span class="o">=</span> <span class="n">Pose2d</span><span class="p">(</span><span class="n">ds_origin_x</span><span class="p">,</span> <span class="n">ds_origin_y</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">ds_origin_theta_deg</span><span class="p">))</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">(</span><span class="n">ds_id</span><span class="p">,</span> <span class="n">ds_origin</span><span class="p">,</span> <span class="n">ds_rows</span><span class="p">,</span> <span class="n">ds_columns</span><span class="p">,</span> <span class="n">ds_cell_offset_x</span><span class="p">,</span> <span class="n">ds_cell_offset_y</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">ds_cell_offset_theta_deg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_active</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.set_value_silent"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_value_silent">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_silent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QtObject</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Silently update an objects value by disconnecting and reconnecting the valueChanged triggers.&quot;&quot;&quot;</span>
+        <span class="n">QtObject</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span>
+        <span class="n">QtObject</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">QtObject</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_value_changed</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.add_robot"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.add_robot">[docs]</a>    <span class="k">def</span> <span class="nf">add_robot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a robot to the launch list tree widget based on the Launch tab input field values.</span>
+<span class="sd">        Before adding, a check is performed to make sure the supplied robot ID is unique,</span>
+<span class="sd">        if it is not unique, the user is notified with a MessageBox. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">!=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="c1"># Translate input boxes into treeWidgetItem columns</span>
+            <span class="n">robot_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            <span class="n">id_num</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">9</span> <span class="k">else</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">id_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">robot_type</span> <span class="o">==</span> <span class="s2">&quot;Ridgeback&quot;</span><span class="p">:</span>
+                <span class="n">id_name</span> <span class="o">=</span> <span class="s2">&quot;rdg&quot;</span>
+            <span class="k">elif</span> <span class="n">robot_type</span> <span class="o">==</span> <span class="s2">&quot;Husky&quot;</span><span class="p">:</span>
+                <span class="n">id_name</span> <span class="o">=</span> <span class="s2">&quot;hsk&quot;</span>
+            <span class="k">elif</span> <span class="n">robot_type</span> <span class="o">==</span> <span class="s2">&quot;ROSbot&quot;</span><span class="p">:</span>
+                <span class="n">id_name</span> <span class="o">=</span> <span class="s2">&quot;rsb&quot;</span>
+            <span class="n">robot_id</span> <span class="o">=</span> <span class="n">id_name</span><span class="o">+</span><span class="n">id_num</span>
+
+            <span class="c1"># Iterate over all existing (top level) items (a.k.a. robots) in the robotTree to check if the new Robot ID is unique.</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+            <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+            <span class="n">is_unique</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">child_count</span><span class="p">):</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="c1"># print(item.text(0) + (&quot;New&quot; if item.text(0) != robot_id else &quot;Duplicate&quot;)</span>
+                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">robot_id</span><span class="p">:</span>
+                    <span class="n">is_unique</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+
+            <span class="n">docking_station</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+            <span class="n">navigation</span> <span class="o">=</span> <span class="s2">&quot;SFM-MPDM&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;move_base&quot;</span>
+            <span class="c1"># print(&quot;Adding robot: &quot; + robot_id + &quot; | &quot; + navigation + &quot; | &quot; + robot_type + &quot; | &quot; + docking_station)</span>
+            <span class="k">if</span> <span class="n">is_unique</span><span class="p">:</span>
+                <span class="n">robot_item</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QTreeWidgetItem</span><span class="p">([</span><span class="n">robot_id</span><span class="p">,</span> <span class="n">navigation</span><span class="p">,</span> <span class="n">robot_type</span><span class="p">,</span> <span class="n">docking_station</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">addTopLevelItem</span><span class="p">(</span><span class="n">robot_item</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_active</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Robot ID is not unique.&quot;</span><span class="p">,</span> <span class="s2">&quot;The Robot ID you tried to add already exists in the launch list and cannot be added again.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.open_context_menu"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.open_context_menu">[docs]</a>    <span class="k">def</span> <span class="nf">open_context_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Opens the Right-Mouse-Button context menu, showing an option to delete the launch tree item.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treeMenu</span><span class="o">.</span><span class="n">exec_</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QCursor</span><span class="o">.</span><span class="n">pos</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.delete_launch_tree_item"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.delete_launch_tree_item">[docs]</a>    <span class="k">def</span> <span class="nf">delete_launch_tree_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Deletes the currently selected item from the launch tree.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">!=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="n">model_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">currentIndex</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">takeTopLevelItem</span><span class="p">(</span><span class="n">model_index</span><span class="o">.</span><span class="n">row</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_active</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.clear_launch_tree"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.clear_launch_tree">[docs]</a>    <span class="k">def</span> <span class="nf">clear_launch_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears the entire launch tree.&quot;&quot;&quot;</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+        <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">child_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_active</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.set_launched_gui"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_launched_gui">[docs]</a>    <span class="k">def</span> <span class="nf">set_launched_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the states and interactivity of the GUI according to the launch status (launched).</span>
+<span class="sd">        Disabling: Launch button, Add robot button, Clear launch list button, launch list tree items.</span>
+<span class="sd">        Enabling: Shutdown button.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">launch_status</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusIcon</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s2">&quot;:/icons/Next.png&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnLaunch</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnShutdown</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnAddRobot</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnClearLaunchList</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxRviz</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxGazeboGUI</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxFleetManager</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+        <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+        <span class="n">is_unique</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">child_count</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.launch_triggered"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.launch_triggered">[docs]</a>    <span class="k">def</span> <span class="nf">launch_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepares the launching of nodes based on the robot items in the current launch list and docking station properties.</span>
+<span class="sd">        Before launch: </span>
+<span class="sd">        1. Checks if the number of assigned robots does not exceed a docking stations capacity.</span>
+<span class="sd">        2. Check if the launch list has any robots at all.</span>
+<span class="sd">        If any issues are encountered, a MessageBox is displayed to the user informing them as such.</span>
+<span class="sd">        Otherwise the created list of Robot class objects is launched by calling &quot;launch_nodes()&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c1"># Empty launch list</span>
+        <span class="c1"># Commision all docking stations (overwriting any previous docking cells)</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">commission</span><span class="p">()</span>
+
+        <span class="c1"># Iterate over all existing (top level) items (a.k.a. robots) in the robotTree and add as robot class objects</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+        <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_navigation_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">assignment_issue</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">ds_issue</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">child_count</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">robot</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+            <span class="n">succesful_assignment</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">assign_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">3</span><span class="p">))])</span>       <span class="c1"># Assign docking station based on item.text(3) as key for docking station dictionairy which has all ds class objects. (ds01, ds02, ds03)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot_navigation_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">))]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">robot</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">succesful_assignment</span><span class="p">:</span>
+                <span class="n">assignment_issue</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">ds_issue</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="p">:</span>
+            <span class="c1"># launch_list is empty, throw error.</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Launch list is empty!&quot;</span><span class="p">,</span> <span class="s2">&quot;You must have at least 1 robot in the &#39;Launch list&#39; before you can launch.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">assignment_issue</span><span class="p">:</span>
+            <span class="c1"># Docking station over max capacity, throw error.</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Maximum capacity exceeded!&quot;</span><span class="p">,</span> <span class="s2">&quot;Docking station &quot;</span><span class="o">+</span> <span class="n">ds_issue</span> <span class="o">+</span><span class="s2">&quot; maxiumum capacity is being exceeded, unable to launch the current setup.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">global</span> <span class="n">launch_status</span>
+            <span class="n">launch_status</span> <span class="o">=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Launching!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Launching...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">launch_nodes</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">launch_status</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_launched_gui</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.set_shutdown_gui"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_shutdown_gui">[docs]</a>    <span class="k">def</span> <span class="nf">set_shutdown_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the states and interactivity of the GUI according to the launch status (shutdown).</span>
+<span class="sd">        Disabling: Shutdown button.</span>
+<span class="sd">        Enabling: Launch button, Add robot button, Clear launch list button, launch list tree items.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">launch_status</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusIcon</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s2">&quot;:/icons/Abort.png&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnLaunch</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnShutdown</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnAddRobot</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnClearLaunchList</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxRviz</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxGazeboGUI</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxFleetManager</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+        <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+        <span class="n">is_unique</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">child_count</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.shutdown_triggered"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.shutdown_triggered">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown_triggered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prompts the user if they are sure they want to shut down, and if so; shuts down the currently active nodes.&quot;&quot;&quot;</span>
+        <span class="k">global</span> <span class="n">launch_status</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">!=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="c1"># It was not launched yet, thus cannot shutdown.</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Nothing to shutdown.&quot;</span><span class="p">,</span> <span class="s2">&quot;No launch was found to shutdown.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                            <span class="s1">&#39;Shut down launched setup?&#39;</span><span class="p">,</span>
+                                            <span class="s2">&quot;Are you sure you want to shut down the currently launched setup? </span><span class="se">\n\n</span><span class="s2">This may take a moment...&quot;</span><span class="p">,</span> 
+                                            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">No</span><span class="p">):</span>
+            
+            <span class="n">launch_status</span> <span class="o">=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">SHUTDOWN</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Shutting down...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelStatusText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Shutting down...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shutdown_nodes</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">launch_status</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_shutdown_gui</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.close_application"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.close_application">[docs]</a>    <span class="k">def</span> <span class="nf">close_application</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prompts the user if they are sure they which to quit the application before quitting.&quot;&quot;&quot;</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                            <span class="s1">&#39;Quit application?&#39;</span><span class="p">,</span>
+                                            <span class="s2">&quot;Are you sure you want to quit? Any unsaved changed will be lost!&quot;</span><span class="p">,</span> 
+                                            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Closing multi_robot_sim launcher node...&quot;</span><span class="p">)</span>
+            <span class="n">QtCore</span><span class="o">.</span><span class="n">QCoreApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.closeEvent"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.closeEvent">[docs]</a>    <span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Takes control of the close event, making sure the user cannot close the application before prompting them.&quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_application</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.about"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.about">[docs]</a>    <span class="k">def</span> <span class="nf">about</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display a MessageBox with the application title, version number and general information.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&lt;center&gt;&quot;</span> \
+            <span class="s2">&quot;&lt;h2&gt;&quot;</span><span class="o">+</span><span class="n">APPLICATION_TITLE</span><span class="o">+</span><span class="s2">&quot;&lt;/h2&gt;&quot;</span> \
+            <span class="s2">&quot;&lt;/center&gt;&quot;</span> \
+            <span class="s2">&quot;The ROS package multi_robot_sim is created by the Human &quot;</span> \
+            <span class="s2">&quot;Robot Co-production research group at the Industrial Design &quot;</span> \
+            <span class="s2">&quot;Engineering faculty of the Delft University of Technology.&quot;</span> \
+            <span class="s2">&quot;&lt;p&gt;Version: &quot;</span><span class="o">+</span><span class="n">VERSION</span><span class="o">+</span><span class="s2">&quot;&lt;br/&gt;&quot;</span> \
+            <span class="s2">&quot;License: Apache License version 2.0&lt;/p&gt;&quot;</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">about</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;About - &quot;</span> <span class="o">+</span> <span class="n">APPLICATION_TITLE</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.new_file"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.new_file">[docs]</a>    <span class="k">def</span> <span class="nf">new_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method will clear all input field and the launch list,</span>
+<span class="sd">        delete the docking station objects and initilise new default ones.</span>
+<span class="sd">        Before clearing it checks:</span>
+<span class="sd">        1. If the user is sure they want to clear the current setup with a question prompt.</span>
+<span class="sd">        2. If the launch status isn&#39;t currently launched.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">!=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="n">choice</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                                <span class="s1">&#39;New file?&#39;</span><span class="p">,</span>
+                                                <span class="s2">&quot;Are you sure you want to clear current setup and start with a new file? Any unsaved changed will be lost!&quot;</span><span class="p">,</span> 
+                                                <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+                <span class="c1"># Clear robot launch list</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">clear_launch_tree</span><span class="p">()</span>
+
+                <span class="c1"># Clear input fields to default</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># Clear docking station objects from dict, populate dict with new docking station objects, update GUI accordingly</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">populate_docking_station_dict</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_docking_station_gui</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentText</span><span class="p">())])</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_inactive</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Launch list is currently active!&quot;</span><span class="p">,</span> <span class="s2">&quot;Please shut down the currently active launch list before clearing the current setup and creating a new file.&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.save_file_as"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.save_file_as">[docs]</a>    <span class="k">def</span> <span class="nf">save_file_as</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method will open the Qt save dialog, allow the user to input a save name, and save the current setup as .JSON</span>
+<span class="sd">        1. Retrieve filename and filepath from user.</span>
+<span class="sd">        2. Creates dictionaries for the launch list tree items and adds those to the launch tree dict.</span>
+<span class="sd">        3. Creates dictionaries for the docking station objects and adds those to the docking station dict.</span>
+<span class="sd">        4. Adds all widgets QtObjects and abovementioned dictionaries to the savedata_dict.</span>
+<span class="sd">        5. &quot;Dumps&quot; the dictionary to a JSON file and resets &#39;unsaved changes&#39; flag.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Save File&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;JSON (*.json)&quot;</span><span class="p">))</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">and</span> <span class="n">filepath</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+            <span class="c1"># -- Generate a dictionary of all items in the launch list, each item being a dictionary itself with that items all robot launch data --</span>
+            <span class="n">savedata_launch_tree_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># Iterate over all existing (top level) items (a.k.a. robots) in the robotTree and add their column values to the launch_tree_dict.</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">invisibleRootItem</span><span class="p">()</span>
+            <span class="n">child_count</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">childCount</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">child_count</span><span class="p">):</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">savedata_launch_tree_dict</span><span class="p">[</span><span class="n">unicode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">))]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;robot_ID&quot;</span><span class="p">:</span> <span class="n">unicode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span>
+                    <span class="s2">&quot;navigation&quot;</span><span class="p">:</span> <span class="n">unicode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+                    <span class="s2">&quot;robot_type&quot;</span><span class="p">:</span> <span class="n">unicode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+                    <span class="s2">&quot;ds&quot;</span><span class="p">:</span> <span class="n">unicode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+                <span class="p">}</span>
+
+            <span class="c1"># -- Generate a dictionary of all docking station objects, each docking station being a dictionary itself with all ds&#39; data. --</span>
+            <span class="n">savedata_docking_station_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">ds_id</span><span class="p">,</span> <span class="n">ds_origin_x</span><span class="p">,</span> <span class="n">ds_origin_y</span><span class="p">,</span> <span class="n">ds_origin_theta_rad</span><span class="p">,</span> <span class="n">ds_rows</span><span class="p">,</span> <span class="n">ds_columns</span><span class="p">,</span> <span class="n">ds_cell_offset_x</span><span class="p">,</span> <span class="n">ds_cell_offset_y</span><span class="p">,</span> <span class="n">ds_cell_theta_rad</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+                <span class="n">savedata_docking_station_dict</span><span class="p">[</span><span class="n">ds_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">ds_id</span><span class="p">,</span>
+                    <span class="s2">&quot;origin_x&quot;</span><span class="p">:</span> <span class="n">ds_origin_x</span><span class="p">,</span>
+                    <span class="s2">&quot;origin_y&quot;</span><span class="p">:</span> <span class="n">ds_origin_y</span><span class="p">,</span>
+                    <span class="s2">&quot;origin_theta_rad&quot;</span><span class="p">:</span> <span class="n">ds_origin_theta_rad</span><span class="p">,</span>
+                    <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="n">ds_rows</span><span class="p">,</span>
+                    <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="n">ds_columns</span><span class="p">,</span>
+                    <span class="s2">&quot;cell_offset_x&quot;</span><span class="p">:</span> <span class="n">ds_cell_offset_x</span><span class="p">,</span>
+                    <span class="s2">&quot;cell_offset_y&quot;</span><span class="p">:</span> <span class="n">ds_cell_offset_y</span><span class="p">,</span>
+                    <span class="s2">&quot;cell_offset_theta_rad&quot;</span><span class="p">:</span> <span class="n">ds_cell_theta_rad</span>
+                <span class="p">}</span>
+            
+            <span class="c1"># -- Generate top level dictionary which contains all launch input fields, a dict of the launch list and a dict of the docking station settings. --</span>
+            <span class="n">savedata_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="c1"># Launch tab</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">itemText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">currentIndex</span><span class="p">())),</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">itemText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">currentIndex</span><span class="p">())),</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">isChecked</span><span class="p">(),</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="n">savedata_launch_tree_dict</span><span class="p">,</span>
+                
+                <span class="c1"># Docking station tab</span>
+                <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">itemText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">currentIndex</span><span class="p">())),</span>
+                <span class="s2">&quot;docking_stations&quot;</span><span class="p">:</span> <span class="n">savedata_docking_station_dict</span>
+            <span class="p">}</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_savefile</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">savedata_dict</span><span class="p">,</span> <span class="n">json_savefile</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_inactive</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.load_file"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.load_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method will load a setup from a JSON file, overwriting any unsaved changes of the current setup.</span>
+<span class="sd">        1. Retrieve filename and filepath from user.</span>
+<span class="sd">        2. Loads the JSON data into the loaddata_dict dictionary.</span>
+<span class="sd">        3. Loops through the loaddata_dict, setting all Widget and QtObject fields.</span>
+<span class="sd">        4. Populates the tree widget and updates the docking station objects.</span>
+<span class="sd">        5. Resets the &#39;unsaved changes&#39; flag.</span>
+<span class="sd">        Before loading:</span>
+<span class="sd">        1. Checks if the launch status isn&#39;t currently launched.</span>
+<span class="sd">        2. If there are any unsaved changes and prompt the user if they are sure if there are any.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">!=</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="n">open_dialoge</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes</span><span class="p">:</span>
+                <span class="n">choice</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                                <span class="s1">&#39;You have unsaved changes.&#39;</span><span class="p">,</span>
+                                                <span class="s2">&quot;Your setup has unsaved changes. Are you sure you want to overwrite the current setup and load a setup from file? Any unsaved changed will be lost!&quot;</span><span class="p">,</span> 
+                                                <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+                    <span class="n">open_dialoge</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">open_dialoge</span> <span class="o">=</span> <span class="kc">True</span>
+            
+            <span class="k">if</span> <span class="n">open_dialoge</span><span class="p">:</span>
+                <span class="n">filepath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getOpenFileName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Open File&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;JSON (*.json)&quot;</span><span class="p">))</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">filename</span> <span class="ow">and</span> <span class="n">filepath</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+
+                    <span class="c1"># Load JSON file into dictionary</span>
+                    <span class="n">loaddata_dict</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_loadfile</span><span class="p">:</span>
+                        <span class="n">loaddata_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_loadfile</span><span class="p">)</span>
+                    
+                    <span class="c1"># -- Loop over all keys in the dictionary and update UI input fields, launch list and docking stations accordingly --</span>
+                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">loaddata_dict</span><span class="p">:</span>
+                        <span class="c1"># Launch tab</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">loaddata_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_combobox_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxRobotType</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_combobox_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationLaunch</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">spinBoxRobotID</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxSFMMPDM</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_launchtree_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                        
+                        <span class="c1"># Docking station tab</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;docking_stations&quot;</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_docking_stations_from_JSON</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="o">.</span><span class="n">objectName</span><span class="p">()):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_combobox_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comboBoxDockingStationID</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                        
+                    <span class="bp">self</span><span class="o">.</span><span class="n">unsaved_changes_inactive</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Launch list is currently active!&quot;</span><span class="p">,</span> <span class="s2">&quot;Please shut down the currently active launch list before overwriting the current setup and loading a setup.&quot;</span><span class="p">)</span></div>
+    
+    <span class="c1">#region Methods used in loading from JSON</span>
+<div class="viewcode-block" id="GuiMainWindow.set_combobox_from_JSON"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_combobox_from_JSON">[docs]</a>    <span class="k">def</span> <span class="nf">set_combobox_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to find the specified value in the combobox and sets the index to match&quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">findText</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># get the corresponding index for specified string in combobox</span>
+
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># add to list if not found</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">insertItems</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">findText</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">obj</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>   <span class="c1"># preselect a combobox value by index</span></div>
+    
+<div class="viewcode-block" id="GuiMainWindow.set_launchtree_from_JSON"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_launchtree_from_JSON">[docs]</a>    <span class="k">def</span> <span class="nf">set_launchtree_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears the launch tree and repopulates it from the supplied dictionary.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_launch_tree</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">robot_id</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;robot_ID&#39;</span><span class="p">]</span>
+            <span class="n">navigation</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;navigation&#39;</span><span class="p">]</span>
+            <span class="n">robot_type</span>  <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;robot_type&#39;</span><span class="p">]</span>
+            <span class="n">docking_station</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span>
+
+            <span class="n">robot_item</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QTreeWidgetItem</span><span class="p">([</span><span class="n">robot_id</span><span class="p">,</span> <span class="n">navigation</span><span class="p">,</span> <span class="n">robot_type</span><span class="p">,</span> <span class="n">docking_station</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robotTree</span><span class="o">.</span><span class="n">addTopLevelItem</span><span class="p">(</span><span class="n">robot_item</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.set_docking_stations_from_JSON"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.set_docking_stations_from_JSON">[docs]</a>    <span class="k">def</span> <span class="nf">set_docking_stations_from_JSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loops through the supplies dictionary and updates all docking station object instances.</span>
+<span class="sd">        Finishes off by calling an update to the docking station GUI fields.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">ds_id</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_dict</span><span class="p">[</span><span class="n">ds_id</span><span class="p">]</span>
+            <span class="n">ds_origin_x</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;origin_x&#39;</span><span class="p">]</span>
+            <span class="n">ds_origin_y</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;origin_y&#39;</span><span class="p">]</span>
+            <span class="n">ds_origin_theta_rad</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;origin_theta_rad&#39;</span><span class="p">]</span>
+            <span class="n">ds_rows</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;rows&#39;</span><span class="p">]</span>
+            <span class="n">ds_columns</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;columns&#39;</span><span class="p">]</span>
+            <span class="n">ds_cell_offset_x</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;cell_offset_x&#39;</span><span class="p">]</span>
+            <span class="n">ds_cell_offset_y</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;cell_offset_y&#39;</span><span class="p">]</span>
+            <span class="n">ds_cell_offset_theta_rad</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;cell_offset_theta_rad&#39;</span><span class="p">]</span>
+            <span class="n">ds_origin</span> <span class="o">=</span> <span class="n">Pose2d</span><span class="p">(</span><span class="n">ds_origin_x</span><span class="p">,</span> <span class="n">ds_origin_y</span><span class="p">,</span> <span class="n">ds_origin_theta_rad</span><span class="p">)</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">(</span><span class="n">ds_id</span><span class="p">,</span> <span class="n">ds_origin</span><span class="p">,</span> <span class="n">ds_rows</span><span class="p">,</span> <span class="n">ds_columns</span><span class="p">,</span> <span class="n">ds_cell_offset_x</span><span class="p">,</span> <span class="n">ds_cell_offset_y</span><span class="p">,</span> <span class="n">ds_cell_offset_theta_rad</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docking_station_clicked</span><span class="p">()</span></div>
+
+    <span class="c1">#endregion</span>
+
+<div class="viewcode-block" id="GuiMainWindow.launch_nodes"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.launch_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">launch_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        1. Prepares the launching of Gazebo.</span>
+<span class="sd">        2. Sets the Gazebo world map.</span>
+<span class="sd">        3. Launches Gazebo</span>
+<span class="sd">        4. Sets up the robot_list based on the launch list</span>
+<span class="sd">        5. Loops over the launch list, launching the robot instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting launch sequence.&quot;</span><span class="p">)</span>
+
+        <span class="c1">#region Gazebo launching</span>
+        <span class="c1"># Launching gazebo simulator with specified world</span>
+        <span class="n">gui</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxGazeboGUI</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="n">use_sim_time</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">headless</span> <span class="o">=</span> <span class="kc">False</span> 
+        <span class="n">world_name</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;ridgeback_gazebo&quot;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/worlds/ridgeback_race.world&#39;</span>
+
+        <span class="c1"># Creating instance of Gazebo class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gzb</span> <span class="o">=</span> <span class="n">Gazebo</span><span class="p">(</span><span class="n">gui</span><span class="p">,</span> <span class="n">use_sim_time</span><span class="p">,</span> <span class="n">headless</span><span class="p">,</span> <span class="n">world_name</span><span class="p">)</span>
+
+        <span class="c1"># Launching the gazebo simulator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gzb</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="c1"># Running the map server on the existing gzb.launch object</span>
+        <span class="n">map_file</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;multi_ridgeback_nav&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/maps/my_ridgeback_race.yaml&#39;</span>
+        <span class="n">map_server_node</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="s1">&#39;map_server&#39;</span><span class="p">,</span> <span class="s1">&#39;map_server&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;map_server&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">map_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gzb</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">map_server_node</span><span class="p">)</span>
+        <span class="c1">#endregion</span>
+
+        <span class="c1">#region Robot launching</span>
+        <span class="c1"># Set up the robot list (list of strings) based on the launch_list</span>
+        <span class="n">robot_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">robot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="p">:</span>
+            <span class="n">robot_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">robot</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;/robot_list&quot;</span><span class="p">,</span> <span class="n">robot_list</span><span class="p">)</span>
+
+        <span class="c1"># Loop through robot list and spawn the robots</span>
+        <span class="k">for</span> <span class="n">robot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="p">:</span>
+            <span class="n">nav_package</span> <span class="o">=</span> <span class="s2">&quot;sfm_mpdm&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_navigation_dict</span><span class="p">[</span><span class="n">robot</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SFM-MPDM&quot;</span> <span class="k">else</span> <span class="s2">&quot;move_base&quot;</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">nav_package</span> <span class="o">=</span> <span class="n">nav_package</span><span class="p">)</span>
+        <span class="c1">#endregion</span>
+
+        <span class="c1"># Running dynaRviz node (dynamically configured Rviz) on the existing gzb.launch object</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxRviz</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+            <span class="n">dynaRviz_node</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="s1">&#39;multi_robot_sim&#39;</span><span class="p">,</span><span class="s1">&#39;dynaRviz&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Rviz&#39;</span><span class="p">,</span><span class="n">output</span><span class="o">=</span><span class="s2">&quot;screen&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gzb</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">dynaRviz_node</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxFleetManager</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>        
+            <span class="bp">self</span><span class="o">.</span><span class="n">fleet_manager_launch</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">scriptapi</span><span class="o">.</span><span class="n">ROSLaunch</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fleet_manager_launch</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">ROSLaunchParent</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;rooster_fleet_manager&quot;</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/launch/fleet_manager.launch&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fleet_manager_launch</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GuiMainWindow.shutdown_nodes"><a class="viewcode-back" href="../_source/scripts/gui_based_launcher.html#gui_based_launcher.GuiMainWindow.shutdown_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shuts down the launched nodes, starting with robot nodes, ending with Gazebo.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting shutdown sequence.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">robot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_list</span><span class="p">:</span>      <span class="c1"># Shut down robots</span>
+            <span class="n">robot</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gzb</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>   <span class="c1"># Shut down Gazebo, map server and Rviz</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBoxFleetManager</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fleet_manager_launch</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>  <span class="c1"># Shut down Fleet Manager. </span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">APPLICATION_TITLE</span> <span class="o">+</span> <span class="s2">&quot;. Version: &quot;</span><span class="o">+</span><span class="n">VERSION</span><span class="p">)</span>
+        
+        <span class="n">set_up_locations</span><span class="p">()</span>              <span class="c1"># Load local JSON locations file and place in rosparam server.</span>
+        
+        <span class="c1"># Initialize the node</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;multi_robot_sim_launcher&#39;</span><span class="p">,</span> <span class="n">anonymous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">roslaunch</span><span class="o">.</span><span class="n">rlutil</span><span class="o">.</span><span class="n">get_or_generate_uuid</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">roslaunch</span><span class="o">.</span><span class="n">configure_logging</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="c1"># creating instance of ROSPack class to use for path resolution to ros packages</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span>
+
+        <span class="c1">#region --- GUI ---</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+        <span class="n">appGui</span> <span class="o">=</span> <span class="n">GuiMainWindow</span><span class="p">()</span>
+        <span class="n">windowIcon</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">()</span>
+        <span class="n">windowIcon</span><span class="o">.</span><span class="n">addPixmap</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s2">&quot;:/icons/Launch Icon Multi.png&quot;</span><span class="p">),</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">Off</span><span class="p">)</span>
+        <span class="n">appGui</span><span class="o">.</span><span class="n">setWindowIcon</span><span class="p">(</span><span class="n">windowIcon</span><span class="p">)</span>
+        <span class="n">appGui</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+        <span class="c1">#endregion</span>
+        
+
+        <span class="c1"># Shut down launched nodes (if the launch_status is launched of course)</span>
+        <span class="k">if</span> <span class="n">launch_status</span> <span class="o">==</span> <span class="n">launchStatus</span><span class="o">.</span><span class="n">LAUNCHED</span><span class="p">:</span>
+            <span class="n">appGui</span><span class="o">.</span><span class="n">shutdown_nodes</span><span class="p">()</span>
+            <span class="nb">print</span> <span class="s2">&quot;Closing shutdown sequence complete!&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No launched nodes to shutdown; exiting.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ROSInterruptException</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Patrick, Neel
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

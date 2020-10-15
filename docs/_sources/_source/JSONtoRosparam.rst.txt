@@ -1,0 +1,22 @@
+JSONtoRosparam package
+======================
+
+Submodules
+----------
+
+JSONtoRosparam.LocationLoader module
+------------------------------------
+
+.. automodule:: JSONtoRosparam.LocationLoader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: JSONtoRosparam
+    :members:
+    :undoc-members:
+    :show-inheritance:
