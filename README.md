@@ -1,20 +1,23 @@
 # The multi_robot_sim Modular Robotic Simulation Launcher package
 
+This package is part of Robot Optimization, Scheduling, Task Execution and Routing (Ro.O.S.T.E.R.), a ROS (Robot Operating System) based open source project to develop a heterogeneous fleet management solution
+with task allocation, scheduling and autonomous navigation capabilities. Detailed documentation including architectural overview, installation instructions, license information and source code API documentation can be found [here](https://rooster-fleet-management.github.io/rooster_fleet_manager/).
+ 
+This software has been developed as part of the work at
+the ['Center of Design for Advanced Manufacturing'](https://www.tudelft.nl/en/ide/research/research-labs/center-of-design-for-advanced-manufacturing/) lab of [TU Delft](https://www.tudelft.nl/en/)
+on the ['Collaborating and coupled AGV swarms with extended environment recognition'](https://eitmanufacturing.eu/collaborating-and-coupled-agv-swarms-with-extended-environment-recognition/)  project
+funded by [EIT Manufacturing](<https://eitmanufacturing.eu/>).
 
 
 #### Dependencies
-**multi_ridgeback_nav by @neel.nagda**
+**multi_ridgeback_nav**
 
-The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://github.com/ROOSTER-fleet-management/multi_ridgeback_nav/tree/master
+The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://github.com/ROOSTER-fleet-management/multi_ridgeback_nav . Install this package before continuing, carefully following the README.md instructions in its repository.
 
-Install this package before continuing, carefully following the README.md instructions. 
-
-**mutli_husky_nav by @neel.nagda**
+**mutli_husky_nav**
 
 This mutli_robot_sim package is dependend upon the multi_husky_nav package, which can be found here:
-https://github.com/ROOSTER-fleet-management/multi_husky_nav/tree/master
-
-Install this package before continuing, carefully following the README.md instructions.
+https://github.com/ROOSTER-fleet-management/multi_husky_nav . Install this package before continuing, carefully following the README.md instructions in its repository.
 
 **PyQT4**
 
