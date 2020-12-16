@@ -1,27 +1,23 @@
 # The multi_robot_sim Modular Robotic Simulation Launcher package
 
+This package is part of Robot Optimization, Scheduling, Task Execution and Routing (Ro.O.S.T.E.R.), a ROS (Robot Operating System) based open source project to develop a heterogeneous fleet management solution
+with task allocation, scheduling and autonomous navigation capabilities. Detailed documentation including architectural overview, installation instructions, license information and source code API documentation can be found [here](https://rooster-fleet-management.github.io/rooster_fleet_manager/).
+ 
+This software has been developed as part of the work at
+the ['Center of Design for Advanced Manufacturing'](https://www.tudelft.nl/en/ide/research/research-labs/center-of-design-for-advanced-manufacturing/) lab of [TU Delft](https://www.tudelft.nl/en/)
+on the ['Collaborating and coupled AGV swarms with extended environment recognition'](https://eitmanufacturing.eu/collaborating-and-coupled-agv-swarms-with-extended-environment-recognition/)  project
+funded by [EIT Manufacturing](<https://eitmanufacturing.eu/>).
 
 
 #### Dependencies
-**multi_ridgeback_nav by @neel.nagda**
+**multi_ridgeback_nav**
 
-The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://git.tu-delft.ne-kloud.de/neel.nagda/multi_ridgeback_nav/src/melodic-sfm-mpdm
+The multi_robot_sim package is dependend upon the multi_ridgeback_nav package, which can be found here: https://github.com/ROOSTER-fleet-management/multi_ridgeback_nav . Install this package before continuing, carefully following the README.md instructions in its repository.
 
-Install this package before continuing, carefully following the README.md instructions. 
-
-**mutli_husky_nav by @neel.nagda**
+**mutli_husky_nav**
 
 This mutli_robot_sim package is dependend upon the multi_husky_nav package, which can be found here:
-https://git.tu-delft.ne-kloud.de/neel.nagda/multi_husky_nav/src/master
-
-Install this package before continuing, carefully following the README.md instructions.
-
-**sfm_mpdm by @patrick.keesmaat**
-
-The package is also dependend upon the sfm_mpdm package, which can be found here:
-https://git.tu-delft.ne-kloud.de/patrick.keesmaat/sfm_mpdm/src/master
-
-Install this package before continuing, carefully following the README.md instructions.
+https://github.com/ROOSTER-fleet-management/multi_husky_nav . Install this package before continuing, carefully following the README.md instructions in its repository.
 
 **PyQT4**
 
@@ -81,7 +77,7 @@ Shortcut | Explanation
 
 
 ***dynaRviz application.***<br/>
-The dynaRviz application ... FIXME
+The dynaRviz application is basically the normal RViz application except that it is launched dynamically based on the fleet as specified in the Multi Robot Sim Launcher GUI.
 <br/>
 
 
@@ -90,6 +86,6 @@ The dynaRviz application ... FIXME
 #### Planned
 The following items are planned to be implemented in the multi_robot_sim package:
 
-- [ ] Optional launching of the [Fleet Manager package](https://git.tu-delft.ne-kloud.de/denis.zatyagov/rooster_fleet_manager/src/multi-test).
-- [ ] Optional launching of dynamic Rviz based on provided launch information (robots).
+- [X] Optional launching of the [Fleet Manager package](https://github.com/ROOSTER-fleet-management/rooster_fleet_manager/tree/master).
+- [X] Optional launching of dynamic Rviz based on provided launch information (robots).
 - [ ] Expansion of the supported robot types.
